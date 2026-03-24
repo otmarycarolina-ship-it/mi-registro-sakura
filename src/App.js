@@ -67,9 +67,11 @@ const App = () => {
 
   const porcentaje = Math.min(100, (((currentData.horas * 60) + currentData.minutos) / (currentData.meta * 60)) * 100);
 
+  // NUEVO ICONO DE FLOR DE 5 PÉTALOS
   const SakuraIcon = ({ className }) => (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <path d="M12,22C12,22 15,18.5 15,15.5C15,13.5 13.5,12 12,12C10.5,12 9,13.5 9,15.5C9,18.5 12,22 12,22M12,2C12,2 9,5.5 9,8.5C9,10.5 10.5,12 12,12C13.5,12 15,10.5 15,8.5C15,5.5 12,2 12,2M2,12C2,12 5.5,15 8.5,15C10.5,15 12,13.5 12,12C12,10.5 10.5,9 8.5,9C5.5,9 2,12 2,12M22,12C22,12 18.5,9 15.5,9C13.5,9 12,10.5 12,12C12,13.5 13.5,15 15.5,15C18.5,15 22,12 22,12Z" />
+      <path d="M12,12 C12,12 12,5 15,5 C18,5 18,10 12,12 C12,12 18,9 20,12 C22,15 17,17 12,12 C12,12 15,19 12,21 C9,23 7,18 12,12 C12,12 6,15 4,12 C2,9 7,7 12,12 C12,12 6,9 9,5 C12,1 12,12 12,12 Z" />
+      <circle cx="12" cy="12" r="1.5" fill="white" fillOpacity="0.5" />
     </svg>
   );
 
