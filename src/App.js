@@ -9,7 +9,7 @@ const App = () => {
   
   const [mesIndice, setMesIndice] = useState(new Date().getMonth());
   const [datosMensuales, setDatosMensuales] = useState(() => {
-    const salvo = localStorage.getItem('sakura_data_v4');
+    const salvo = localStorage.getItem('sakura_data_v5');
     return salvo ? JSON.parse(salvo) : {};
   });
   const [showEditModal, setShowEditModal] = useState(null);
@@ -21,12 +21,30 @@ const App = () => {
   const totalDiasMes = getDiasEnMes(mesIndice, anioActual);
 
   useEffect(() => {
-    localStorage.setItem('sakura_data_v4', JSON.stringify(datosMensuales));
+    localStorage.setItem('sakura_data_v5', JSON.stringify(datosMensuales));
   }, [datosMensuales]);
 
+  // Estructura de datos actualizada para incluir historial por día
   const currentData = datosMensuales[mesActualKey] || {
-    meta: 50, horas: 0, minutos: 0, revisitas: 0, estudiantes: [], diasActivos: [] 
+    meta: 50, 
+    estudiantes: [], 
+    historial: {} // Formato: { "1": { h: 1, m: 30 }, "2": { h: 0, m: 45 } }
   };
+
+  // Cálculos dinámicos basados en el historial de días
+  const calcularTotales = () => {
+    let totalMinutos = 0;
+    Object.values(currentData.historial || {}).forEach(dia => {
+      totalMinutos += (dia.h * 60) + dia.m;
+    });
+    return {
+      horas: Math.floor(totalMinutos / 60),
+      minutos: totalMinutos % 60,
+      totalMinutos
+    };
+  };
+
+  const { horas, minutos, totalMinutos } = calcularTotales();
 
   const updateCurrentMonth = (newData) => {
     setDatosMensuales(prev => ({
@@ -39,37 +57,45 @@ const App = () => {
   const [nuevoMinuto, setNuevoMinuto] = useState('');
   const [formEstudiante, setFormEstudiante] = useState({ nombre: '', fecha: '', leccion: '', notas: '' });
 
+  // Registro sincronizado con el día actual
   const registrarActividad = () => {
     let h = parseInt(nuevaHora) || 0;
     let m = parseInt(nuevoMinuto) || 0;
     const hoy = new Date().getDate();
+    
+    // Solo permitimos registro automático si estamos en el mes real actual
+    const esMesReal = new Date().getMonth() === mesIndice;
+    const diaARegistrar = esMesReal ? hoy : 1; 
+
     if (h > 0 || m > 0) {
-      const totalMinutosActuales = (currentData.horas * 60) + currentData.minutos;
-      const nuevoTotalMinutos = totalMinutosActuales + (h * 60) + m;
-      const esMesReal = new Date().getMonth() === mesIndice;
-      const nuevosDias = (esMesReal && !currentData.diasActivos.includes(hoy)) ? [...currentData.diasActivos, hoy] : currentData.diasActivos;
-      updateCurrentMonth({ horas: Math.floor(nuevoTotalMinutos / 60), minutos: nuevoTotalMinutos % 60, diasActivos: nuevosDias });
-      setNuevaHora(''); setNuevoMinuto('');
+      const historialActualizado = { ...currentData.historial };
+      const tiempoPrevio = historialActualizado[diaARegistrar] || { h: 0, m: 0 };
+      
+      historialActualizado[diaARegistrar] = {
+        h: tiempoPrevio.h + h,
+        m: tiempoPrevio.m + m
+      };
+
+      updateCurrentMonth({ historial: historialActualizado });
+      setNuevaHora(''); 
+      setNuevoMinuto('');
     }
   };
 
-  const toggleDiaManual = (dia) => {
-    const nuevosDias = currentData.diasActivos.includes(dia) ? currentData.diasActivos.filter(d => d !== dia) : [...currentData.diasActivos, dia];
-    updateCurrentMonth({ diasActivos: nuevosDias });
+  const eliminarDia = (dia) => {
+    const nuevoHistorial = { ...currentData.historial };
+    delete nuevoHistorial[dia];
+    updateCurrentMonth({ historial: nuevoHistorial });
   };
 
-  // --- FUNCIÓN WHATSAPP ACTUALIZADA ---
   const enviarWhatsApp = () => {
-    const mensaje = `🌸 *Mi informe* 🌸\n\n⏱️ *Horas:* ${currentData.horas}h ${currentData.minutos}m\n📖 *Cursos Bíblicos:* ${currentData.estudiantes.length}\n\n_Enviado desde mi Registro Sakura_ 🌸`;
-    
-    // El protocolo whatsapp://send fuerza la apertura de la app directamente
+    const mensaje = `🌸 *Mi informe* 🌸\n\n⏱️ *Horas:* ${horas}h ${minutos}m\n📖 *Cursos Bíblicos:* ${currentData.estudiantes.length}\n\n_Enviado desde mi Registro Sakura_ 🌸`;
     const url = `whatsapp://send?text=${encodeURIComponent(mensaje)}`;
     window.location.href = url;
   };
 
-  const porcentaje = Math.min(100, (((currentData.horas * 60) + currentData.minutos) / (currentData.meta * 60)) * 100);
+  const porcentaje = Math.min(100, (totalMinutos / (currentData.meta * 60)) * 100);
 
-  // --- NUEVA FLOR SAKURA MEJORADA ---
   const SakuraIcon = ({ className }) => (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
       <path d="M12 12c.5-1.5 2-5.5 0-9.5-2 4-.5 8 0 9.5z" />
@@ -131,20 +157,31 @@ const App = () => {
             <section className="bg-white p-8 rounded-[3rem] shadow-sm border border-pink-50">
               <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest mb-6 flex items-center gap-2"><CalendarIcon size={16} /> Actividad en {mesActualKey}</h3>
               <div className="grid grid-cols-7 gap-2">
-                {[...Array(totalDiasMes)].map((_, i) => (
-                  <button key={i+1} onClick={() => toggleDiaManual(i+1)} className={`aspect-square rounded-full text-[10px] font-bold transition-all ${currentData.diasActivos.includes(i+1) ? 'bg-pink-400 text-white shadow-md shadow-pink-100' : 'bg-pink-50 text-pink-200 hover:bg-pink-100'}`}>{i+1}</button>
-                ))}
+                {[...Array(totalDiasMes)].map((_, i) => {
+                  const dia = i + 1;
+                  const tieneActividad = currentData.historial && currentData.historial[dia];
+                  return (
+                    <button 
+                      key={dia} 
+                      onClick={() => tieneActividad && window.confirm(`¿Borrar actividad del día ${dia}?`) && eliminarDia(dia)}
+                      className={`aspect-square rounded-full text-[10px] font-bold transition-all ${tieneActividad ? 'bg-pink-400 text-white shadow-md shadow-pink-100' : 'bg-pink-50 text-pink-200 hover:bg-pink-100'}`}
+                    >
+                      {dia}
+                    </button>
+                  );
+                })}
               </div>
+              <p className="text-[9px] text-pink-300 mt-4 text-center italic">* Pulsa un día activo para borrar su tiempo</p>
             </section>
           </div>
 
           <div className="lg:col-span-8 space-y-8">
             <section className="bg-white/80 backdrop-blur-md p-10 rounded-[4rem] shadow-xl border border-pink-50 text-center">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10 text-center">
-                <div className="p-4 bg-pink-50/50 rounded-[2rem]"><p className="text-[10px] font-black text-pink-300 uppercase mb-1">Horas</p><p className="text-2xl font-black text-pink-600">{currentData.horas}h {currentData.minutos}m</p></div>
+                <div className="p-4 bg-pink-50/50 rounded-[2rem]"><p className="text-[10px] font-black text-pink-300 uppercase mb-1">Horas</p><p className="text-2xl font-black text-pink-600">{horas}h {minutos}m</p></div>
                 <div className="p-4 bg-pink-50/50 rounded-[2rem]"><p className="text-[10px] font-black text-pink-300 uppercase mb-1">Cursos</p><p className="text-2xl font-black text-pink-600">{currentData.estudiantes.length}</p></div>
                 <div className="p-4 bg-pink-600 rounded-[2rem] text-white"><p className="text-[10px] font-black opacity-70 uppercase mb-1 font-bold">Porcentaje</p><p className="text-2xl font-black">{porcentaje.toFixed(0)}%</p></div>
-                <button onClick={() => {if(window.confirm("¿Borrar informe del mes?")) updateCurrentMonth({horas:0, minutos:0, estudiantes:[], diasActivos:[]})}} className="p-4 bg-pink-50 text-pink-200 rounded-[2rem] flex items-center justify-center hover:text-pink-400 transition-colors"><Trash2 size={24} /></button>
+                <button onClick={() => {if(window.confirm("¿Borrar informe completo del mes?")) updateCurrentMonth({historial:{}, estudiantes:[]})}} className="p-4 bg-pink-50 text-pink-200 rounded-[2rem] flex items-center justify-center hover:text-pink-400 transition-colors"><Trash2 size={24} /></button>
               </div>
               <button onClick={enviarWhatsApp} className="w-full bg-[#25D366] text-white py-6 rounded-[2.5rem] font-black uppercase tracking-widest text-sm shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-4"><Send size={24} /> ENVIAR INFORME POR WHATSAPP</button>
             </section>
