@@ -1,180 +1,152 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Send, Trash2, Plus, BookOpen, Clock, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+  Calendar, Clock, BookOpen, Trash2, BarChart3, 
+  Target, Heart, Timer, ChevronRight, ChevronLeft, 
+  UserPlus, Send, Save, Book
+} from 'lucide-react';
 
 const App = () => {
-  // --- ESTADOS (Memoria) ---
-  const [horas, setHoras] = useState(0);
-  const [minutos, setMinutos] = useState(0);
-  const [estudios, setEstudios] = useState(0);
-  const [nombreEstudiante, setNombreEstudiante] = useState('');
-  const [leccion, setLeccion] = useState('');
-  const [mes, setMes] = useState('MARZO');
-  const metaHoras = 50;
+  const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+  const [mesIndice, setMesIndice] = useState(new Date().getMonth());
+  
+  // --- Autoguardado ---
+  const [datosMensuales, setDatosMensuales] = useState(() => {
+    const guardado = localStorage.getItem('sakura_data_final');
+    return guardado ? JSON.parse(guardado) : {};
+  });
 
-  // --- 1. AUTOGUARDADO (Carga al abrir) ---
   useEffect(() => {
-    const datosGuardados = localStorage.getItem('registroSakura');
-    if (datosGuardados) {
-      const parsed = JSON.parse(datosGuardados);
-      setHoras(parsed.horas || 0);
-      setMinutos(parsed.minutos || 0);
-      setEstudios(parsed.estudios || 0);
-    }
-  }, []);
+    localStorage.setItem('sakura_data_final', JSON.stringify(datosMensuales));
+  }, [datosMensuales]);
 
-  // --- 2. AUTOGUARDADO (Guarda al cambiar algo) ---
-  useEffect(() => {
-    const datos = { horas, minutos, estudios };
-    localStorage.setItem('registroSakura', JSON.stringify(datos));
-  }, [horas, minutos, estudios]);
-
-  // --- FUNCIONES ---
-  const agregarTiempo = () => {
-    let nuevosMinutos = minutos + 15; 
-    if (nuevosMinutos >= 60) {
-      setHoras(horas + 1);
-      setMinutos(nuevosMinutos - 60);
-    } else {
-      setMinutos(nuevosMinutos);
-    }
+  const mesActualKey = meses[mesIndice];
+  const currentData = datosMensuales[mesActualKey] || {
+    meta: 50, horas: 0, minutos: 0, revisitas: 0, estudios: []
   };
 
-  const registrarEstudio = () => {
-    if (!nombreEstudiante) {
-      alert("Por favor escribe el nombre del estudiante");
-      return;
-    }
-    setEstudios(estudios + 1);
-    setNombreEstudiante('');
-    setLeccion('');
-    alert(`¡Estudio con ${nombreEstudiante} registrado! 📖`);
+  const updateCurrentMonth = (newData) => {
+    setDatosMensuales(prev => ({
+      ...prev, [mesActualKey]: { ...currentData, ...newData }
+    }));
   };
 
-  const borrarTodo = () => {
-    if (window.confirm("¿Estás segura de borrar el informe del mes? 🌸")) {
-      setHoras(0);
-      setMinutos(0);
-      setEstudios(0);
-    }
-  };
-
+  // --- TU MENSAJE PERSONALIZADO ---
   const enviarWhatsApp = () => {
-    const mensaje = `🌸 *Mi informe* 🌸
-
-⏱️ *Horas:* ${horas}h ${minutos}m
-📖 *Cursos Bíblicos:* ${estudios}
-
-_¡Servicio completado con éxito!_ ✨`;
-
-    const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
-    // window.open con estos parámetros permite abrir WhatsApp desde la PWA/Pantalla de inicio
-    window.open(url, '_blank', 'noopener,noreferrer');
+    const mensaje = `🌸 *Mi informe* 🌸%0A%0A` +
+                    `⏱️ *Horas:* ${currentData.horas}h ${currentData.minutos}m%0A` +
+                    `📖 *Cursos Bíblicos:* ${(currentData.estudios || []).length}`;
+    
+    window.open(`https://wa.me/?text=${mensaje}`, '_blank');
   };
 
-  // Cálculo de progreso
-  const totalMinutos = (horas * 60) + minutos;
-  const porcentaje = Math.min(Math.round((totalMinutos / (metaHoras * 60)) * 100), 100);
+  const [nuevaHora, setNuevaHora] = useState('');
+  const [nuevoMinuto, setNuevoMinuto] = useState('');
+  const [estudioTemp, setEstudioTemp] = useState({ nombre: '', fecha: '', leccion: '' });
+
+  const agregarTiempo = () => {
+    let h = parseInt(nuevaHora) || 0;
+    let m = parseInt(nuevoMinuto) || 0;
+    if (h > 0 || m > 0) {
+      const totalMinutos = (currentData.horas * 60) + currentData.minutos + (h * 60) + m;
+      updateCurrentMonth({ horas: Math.floor(totalMinutos / 60), minutos: totalMinutos % 60 });
+      setNuevaHora(''); setNuevoMinuto('');
+    }
+  };
+
+  const agregarEstudio = () => {
+    if (estudioTemp.nombre) {
+      const listaActual = currentData.estudios || [];
+      updateCurrentMonth({ estudios: [...listaActual, { ...estudioTemp, id: Date.now() }] });
+      setEstudioTemp({ nombre: '', fecha: '', leccion: '' });
+    }
+  };
+
+  const porcentaje = Math.min(100, (currentData.horas / currentData.meta) * 100);
 
   return (
-    <div className="min-h-screen bg-[#FFF5F7] font-sans text-gray-500 pb-10">
-      
-      {/* Selector de Mes */}
-      <div className="flex justify-between items-center p-8">
-        <ChevronLeft className="text-pink-300" />
-        <h1 className="text-2xl font-italic text-pink-400 tracking-widest italic font-light">{mes}</h1>
-        <ChevronRight className="text-pink-300" />
-      </div>
+    <div className="min-h-screen bg-[#fff5f7] p-4 font-sans text-slate-800 pb-20">
+      <div className="max-w-md mx-auto">
+        
+        {/* Mes y Navegación */}
+        <nav className="flex items-center justify-between mb-6 bg-white/80 backdrop-blur-sm p-4 rounded-3xl shadow-sm border border-pink-100">
+          <button onClick={() => setMesIndice((mesIndice - 1 + 12) % 12)} className="text-pink-400"><ChevronLeft /></button>
+          <div className="text-center">
+            <h1 className="text-xl font-black text-pink-600 uppercase italic tracking-tighter">{mesActualKey}</h1>
+          </div>
+          <button onClick={() => setMesIndice((mesIndice + 1) % 12)} className="text-pink-400"><ChevronRight /></button>
+        </nav>
 
-      {/* Tarjeta de Meta */}
-      <div className="mx-6 bg-white p-6 rounded-[2.5rem] shadow-sm mb-6 border border-pink-50">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-pink-100 p-3 rounded-2xl text-pink-500">
-              <Clock size={20} />
+        {/* Meta de Horas */}
+        <section className="bg-white p-5 rounded-[2rem] shadow-md border border-pink-50 mb-6">
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center gap-2">
+              <div className="bg-pink-100 p-2 rounded-xl text-pink-500"><Target size={18}/></div>
+              <input type="number" value={currentData.meta} onChange={(e) => updateCurrentMonth({ meta: Number(e.target.value) })} className="w-10 font-bold text-lg text-pink-600 bg-transparent focus:outline-none" />
+              <span className="text-xs font-bold text-pink-300 uppercase tracking-widest">Horas Meta</span>
             </div>
-            <span className="text-2xl font-bold text-gray-400">{metaHoras}</span>
-            <span className="text-pink-200 text-xs uppercase tracking-widest font-bold">Horas Meta</span>
+            <span className="font-black text-pink-500">{porcentaje.toFixed(0)}%</span>
           </div>
-          <span className="text-pink-400 font-bold">{porcentaje}%</span>
-        </div>
-        <div className="w-full bg-pink-50 h-3 rounded-full overflow-hidden">
-          <div className="bg-pink-400 h-full transition-all duration-500" style={{ width: `${porcentaje}%` }}></div>
-        </div>
-      </div>
-
-      {/* Registro Diario (Horas) */}
-      <div className="mx-6 bg-white p-6 rounded-[2.5rem] shadow-sm mb-6 border border-pink-50">
-        <div className="flex items-center gap-2 mb-6 text-pink-300 text-[10px] font-bold uppercase tracking-[0.2em]">
-          <Clock size={12} /> Registro Diario
-        </div>
-        <div className="flex justify-between items-center">
-          <div className="bg-[#FAF9FB] px-8 py-4 rounded-2xl text-gray-300 text-xl font-light w-24 text-center">H</div>
-          <div className="bg-[#FAF9FB] px-8 py-4 rounded-2xl text-gray-300 text-xl font-light w-24 text-center">M</div>
-          <button onClick={agregarTiempo} className="bg-pink-500 text-white p-5 rounded-2xl shadow-lg shadow-pink-200 active:scale-90 transition-transform">
-            <Plus size={28} />
-          </button>
-        </div>
-      </div>
-
-      {/* Cursos Bíblicos (Formulario exacto a la imagen) */}
-      <div className="mx-6 bg-white p-6 rounded-[2.5rem] shadow-sm mb-6 border border-pink-50 text-gray-400">
-        <div className="flex items-center gap-2 mb-6 text-pink-300 text-[10px] font-bold uppercase tracking-[0.2em]">
-          <BookOpen size={12} /> Cursos Bíblicos
-        </div>
-        <input 
-          type="text" 
-          placeholder="Nombre del estudiante"
-          value={nombreEstudiante}
-          onChange={(e) => setNombreEstudiante(e.target.value)}
-          className="w-full p-5 bg-[#FAF9FB] rounded-2xl mb-4 outline-none placeholder-gray-300 italic"
-        />
-        <div className="flex gap-3 mb-6">
-          <div className="flex-1 bg-[#FAF9FB] rounded-2xl p-5 flex justify-between items-center">
-             <span className="text-gray-300 italic">...</span>
-             <ChevronRight size={18} className="text-pink-300 rotate-90" />
+          <div className="h-2 w-full bg-pink-50 rounded-full overflow-hidden">
+            <div className="h-full bg-pink-400 transition-all duration-500" style={{ width: `${porcentaje}%` }} />
           </div>
-          <input 
-            type="text" 
-            placeholder="Lección/Cap."
-            value={leccion}
-            onChange={(e) => setLeccion(e.target.value)}
-            className="flex-1 p-5 bg-[#FAF9FB] rounded-2xl outline-none placeholder-gray-300 italic"
-          />
-        </div>
-        <button onClick={registrarEstudio} className="w-full bg-pink-500 text-white p-5 rounded-2xl font-bold shadow-lg shadow-pink-100 flex items-center justify-center gap-3">
-          <UserPlus size={20} /> REGISTRAR VISITA
-        </button>
-      </div>
+        </section>
 
-      {/* Resumen Final Rosa */}
-      <div className="mx-6 mb-6 bg-pink-500 p-8 rounded-[3rem] text-white shadow-xl flex justify-around items-center text-center">
-        <div>
-          <p className="text-[10px] uppercase opacity-70 mb-2 italic tracking-widest">Tiempo Total</p>
-          <p className="text-3xl font-medium">{horas}h {minutos}m</p>
-        </div>
-        <div className="w-[1px] h-12 bg-pink-400 opacity-50"></div>
-        <div>
-          <p className="text-[10px] uppercase opacity-70 mb-2 italic tracking-widest">Estudios</p>
-          <p className="text-3xl font-medium">{estudios}</p>
-        </div>
-      </div>
+        {/* Registro Diario */}
+        <section className="bg-white p-5 rounded-[2rem] shadow-md border border-pink-50 mb-6">
+          <h2 className="text-[10px] font-black uppercase text-pink-300 mb-4 flex items-center gap-2"><Timer size={14} /> Registro Diario</h2>
+          <div className="flex gap-2">
+            <input type="number" placeholder="H" value={nuevaHora} onChange={e => setNuevaHora(e.target.value)} className="w-full bg-pink-50/50 rounded-2xl p-3 text-center font-bold text-pink-600 focus:ring-1 focus:ring-pink-200 outline-none" />
+            <input type="number" placeholder="M" value={nuevoMinuto} onChange={e => setNuevoMinuto(e.target.value)} className="w-full bg-pink-50/50 rounded-2xl p-3 text-center font-bold text-pink-600 focus:ring-1 focus:ring-pink-200 outline-none" />
+            <button onClick={agregarTiempo} className="bg-pink-500 text-white px-6 rounded-2xl font-black text-xl shadow-lg shadow-pink-100 active:scale-90 transition-transform">+</button>
+          </div>
+        </section>
 
-      {/* Botones de Acción */}
-      <div className="mx-6 flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-4">
-          <button onClick={() => alert("¡Progreso guardado! 🌸")} className="bg-white border border-pink-100 text-pink-400 p-5 rounded-3xl flex items-center justify-center gap-2 font-bold tracking-widest text-xs uppercase shadow-sm">
+        {/* CURSOS BÍBLICOS (Tal cual lo pediste) */}
+        <section className="bg-white p-5 rounded-[2rem] shadow-md border border-pink-50 mb-6">
+          <h2 className="text-[10px] font-black uppercase text-pink-300 mb-4 flex items-center gap-2"><Book size={14} /> Cursos Bíblicos</h2>
+          <div className="space-y-2 mb-4">
+            <input type="text" placeholder="Nombre del estudiante" value={estudioTemp.nombre} onChange={e => setEstudioTemp({...estudioTemp, nombre: e.target.value})} className="w-full bg-pink-50/30 border border-pink-100 rounded-xl p-3 text-sm outline-none" />
+            <div className="flex gap-2">
+              <input type="date" value={estudioTemp.fecha} onChange={e => setEstudioTemp({...estudioTemp, fecha: e.target.value})} className="w-full bg-pink-50/30 border border-pink-100 rounded-xl p-3 text-[10px] text-pink-400 outline-none" />
+              <input type="text" placeholder="Lección/Cap." value={estudioTemp.leccion} onChange={e => setEstudioTemp({...estudioTemp, leccion: e.target.value})} className="w-full bg-pink-50/30 border border-pink-100 rounded-xl p-3 text-sm outline-none" />
+            </div>
+            <button onClick={agregarEstudio} className="w-full bg-pink-500 text-white p-3 rounded-2xl font-black text-xs uppercase flex items-center justify-center gap-2 shadow-md active:scale-95 transition-transform">
+              <UserPlus size={16}/> Registrar Visita
+            </button>
+          </div>
+          {/* Lista de Estudios Registrados */}
+          <div className="space-y-2">
+            {(currentData.estudios || []).map(est => (
+              <div key={est.id} className="flex justify-between items-center bg-pink-50/20 p-3 rounded-2xl border border-pink-50 animate-in fade-in slide-in-from-top-1">
+                <div className="flex flex-col">
+                  <span className="font-bold text-pink-700 text-sm">{est.nombre}</span>
+                  <span className="text-[10px] text-pink-300 font-bold">{est.fecha} — {est.leccion}</span>
+                </div>
+                <button onClick={() => updateCurrentMonth({ estudios: currentData.estudios.filter(e => e.id !== est.id) })} className="text-pink-200 hover:text-red-400 transition-colors"><Trash2 size={16}/></button>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Resumen Mensual Visual */}
+        <section className="bg-pink-600 p-6 rounded-[2.5rem] shadow-xl text-white mb-6">
+          <div className="grid grid-cols-2 gap-4 text-center">
+            <div><p className="text-[10px] font-bold uppercase opacity-60 italic">Tiempo Total</p><p className="text-2xl font-black">{currentData.horas}h {currentData.minutos}m</p></div>
+            <div><p className="text-[10px] font-bold uppercase opacity-60 italic">Estudios</p><p className="text-2xl font-black">{(currentData.estudios || []).length}</p></div>
+          </div>
+        </section>
+
+        {/* Botones de Acción */}
+        <div className="flex flex-col gap-3">
+          <button onClick={() => alert("✅ ¡Tus datos se han guardado correctamente en este dispositivo!")} className="w-full bg-white border-2 border-pink-100 text-pink-400 p-4 rounded-3xl font-black uppercase flex items-center justify-center gap-3 text-sm shadow-sm active:bg-pink-50 transition-colors">
             <Save size={18} /> Guardar Borrador
           </button>
-          <button onClick={borrarTodo} className="bg-pink-50/50 border border-pink-100 text-pink-300 p-5 rounded-3xl flex items-center justify-center gap-2 font-bold tracking-widest text-xs uppercase shadow-sm">
-            <Trash2 size={18} /> Borrar
+          <button onClick={enviarWhatsApp} className="w-full bg-pink-500 text-white p-4 rounded-3xl font-black uppercase flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-all">
+            <Send size={18} /> Enviar Informe por WhatsApp
           </button>
         </div>
-        
-        <button onClick={enviarWhatsApp} className="bg-pink-500 text-white p-6 rounded-[2.5rem] shadow-lg shadow-pink-200 flex items-center justify-center gap-4 font-bold text-xs tracking-[0.2em] uppercase">
-          <Send size={22} className="rotate-[-10deg]" /> ENVIAR INFORME POR WHATSAPP
-        </button>
-      </div>
 
+      </div>
     </div>
   );
 };
