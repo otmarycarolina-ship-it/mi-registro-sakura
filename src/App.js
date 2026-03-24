@@ -67,15 +67,9 @@ const App = () => {
 
   const porcentaje = Math.min(100, (((currentData.horas * 60) + currentData.minutos) / (currentData.meta * 60)) * 100);
 
-  // Icono de Sakura con 5 pétalos actualizado
   const SakuraIcon = ({ className }) => (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <path d="M12.01,12.38 C12.01,12.38 10.74,5.81 12,5.28 C13.26,4.75 14.36,5.32 14.89,6.58 C15.42,7.84 12.01,12.38 12.01,12.38 Z" />
-      <path d="M12.01,12.38 C12.01,12.38 5.62,10.28 5.28,11.58 C4.94,12.88 5.66,13.88 7,14.22 C8.34,14.56 12.01,12.38 12.01,12.38 Z" />
-      <path d="M12.01,12.38 C12.01,12.38 10,18.5 11.2,19 C12.4,19.5 13.5,18.8 14,17.5 C14.5,16.2 12.01,12.38 12.01,12.38 Z" />
-      <path d="M12.01,12.38 C12.01,12.38 18.2,16.2 19,15 C19.8,13.8 19.2,12.8 18,12 C16.8,11.2 12.01,12.38 12.01,12.38 Z" />
-      <path d="M12.01,12.38 C12.01,12.38 18.2,7.5 17.5,6.5 C16.8,5.5 15.6,5.8 14.5,7 C13.4,8.2 12.01,12.38 12.01,12.38 Z" />
-      <circle cx="12" cy="12" r="1.5" className="opacity-50" fill="white" />
+      <path d="M12,22C12,22 15,18.5 15,15.5C15,13.5 13.5,12 12,12C10.5,12 9,13.5 9,15.5C9,18.5 12,22 12,22M12,2C12,2 9,5.5 9,8.5C9,10.5 10.5,12 12,12C13.5,12 15,10.5 15,8.5C15,5.5 12,2 12,2M2,12C2,12 5.5,15 8.5,15C10.5,15 12,13.5 12,12C12,10.5 10.5,9 8.5,9C5.5,9 2,12 2,12M22,12C22,12 18.5,9 15.5,9C13.5,9 12,10.5 12,12C12,13.5 13.5,15 15.5,15C18.5,15 22,12 22,12Z" />
     </svg>
   );
 
@@ -173,7 +167,7 @@ const App = () => {
               <input type="text" placeholder="Nombre Estudiante" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.nombre} onChange={e => setFormEstudiante({...formEstudiante, nombre: e.target.value})}/>
               <div className="grid grid-cols-2 gap-2">
                 <input type="text" placeholder="Fecha (Ej: 24/03)" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.fecha} onChange={e => setFormEstudiante({...formEstudiante, fecha: e.target.value})}/>
-                <input type="text" placeholder="Folleto / Cap" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.leccion} onChange={setFormEstudiante({...formEstudiante, leccion: e.target.value})}/>
+                <input type="text" placeholder="Folleto / Cap" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.leccion} onChange={e => setFormEstudiante({...formEstudiante, leccion: e.target.value})}/>
               </div>
               <textarea placeholder="Notas del estudiante..." rows="3" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none resize-none" value={formEstudiante.notas} onChange={e => setFormEstudiante({...formEstudiante, notas: e.target.value})}/>
               <button onClick={() => {
