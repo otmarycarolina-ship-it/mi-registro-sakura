@@ -24,14 +24,12 @@ const App = () => {
     localStorage.setItem('sakura_data_v5', JSON.stringify(datosMensuales));
   }, [datosMensuales]);
 
-  // Estructura de datos actualizada para incluir historial por día
   const currentData = datosMensuales[mesActualKey] || {
     meta: 50, 
     estudiantes: [], 
-    historial: {} // Formato: { "1": { h: 1, m: 30 }, "2": { h: 0, m: 45 } }
+    historial: {} 
   };
 
-  // Cálculos dinámicos basados en el historial de días
   const calcularTotales = () => {
     let totalMinutos = 0;
     Object.values(currentData.historial || {}).forEach(dia => {
@@ -57,13 +55,10 @@ const App = () => {
   const [nuevoMinuto, setNuevoMinuto] = useState('');
   const [formEstudiante, setFormEstudiante] = useState({ nombre: '', fecha: '', leccion: '', notas: '' });
 
-  // Registro sincronizado con el día actual
   const registrarActividad = () => {
     let h = parseInt(nuevaHora) || 0;
     let m = parseInt(nuevoMinuto) || 0;
     const hoy = new Date().getDate();
-    
-    // Solo permitimos registro automático si estamos en el mes real actual
     const esMesReal = new Date().getMonth() === mesIndice;
     const diaARegistrar = esMesReal ? hoy : 1; 
 
@@ -120,7 +115,8 @@ const App = () => {
       <div className="max-w-5xl mx-auto relative z-10">
         <header className="text-center mb-10">
           <div className="flex justify-center mb-2"><SakuraIcon className="w-12 h-12 text-pink-400 animate-pulse" /></div>
-          <h1 className="text-5xl font-serif font-bold text-pink-600 tracking-tight italic">Ministerio Sakura</h1>
+          {/* TÍTULO ACTUALIZADO AQUÍ */}
+          <h1 className="text-5xl font-serif font-bold text-pink-600 tracking-tight italic">Mi Registro de Servicio</h1>
           <p className="text-pink-300 font-bold uppercase tracking-[0.4em] text-[10px] mt-2">Organización Personal</p>
         </header>
 
@@ -217,7 +213,7 @@ const App = () => {
                 <input type="text" placeholder="Fecha (Ej: 24/03)" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.fecha} onChange={e => setFormEstudiante({...formEstudiante, fecha: e.target.value})}/>
                 <input type="text" placeholder="Folleto / Cap" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.leccion} onChange={e => setFormEstudiante({...formEstudiante, leccion: e.target.value})}/>
               </div>
-              <textarea placeholder="Notas del estudiante..." rows="3" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none resize-none" value={formEstudiante.notas} onChange={e => setFormEstudiante({...formEstudiante, notas: e.target.value})}/>
+              <textarea placeholder="Notas del estudiante..." rows="3" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none resize-none" value={formEstudiante.notes} onChange={e => setFormEstudiante({...formEstudiante, notas: e.target.value})}/>
               <button onClick={() => {
                 if(formEstudiante.nombre) {
                   const nuevos = showEditModal === 'nuevo' ? [...currentData.estudiantes, { ...formEstudiante, id: Date.now() }] : currentData.estudiantes.map(e => e.id === showEditModal ? formEstudiante : e);
