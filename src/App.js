@@ -1,152 +1,213 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Calendar, Clock, BookOpen, Trash2, BarChart3, 
-  Target, Heart, Timer, ChevronRight, ChevronLeft, 
-  UserPlus, Send, Save, Book
+  Calendar as CalendarIcon, Clock, BookOpen, Trash2, Edit3, Target, 
+  Timer, ChevronRight, ChevronLeft, UserPlus, Send, X, StickyNote
 } from 'lucide-react';
 
 const App = () => {
   const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-  const [mesIndice, setMesIndice] = useState(new Date().getMonth());
   
-  // --- Autoguardado ---
+  const [mesIndice, setMesIndice] = useState(new Date().getMonth());
   const [datosMensuales, setDatosMensuales] = useState(() => {
-    const guardado = localStorage.getItem('sakura_data_final');
-    return guardado ? JSON.parse(guardado) : {};
+    const salvo = localStorage.getItem('sakura_data_v2');
+    return salvo ? JSON.parse(salvo) : {};
   });
-
-  useEffect(() => {
-    localStorage.setItem('sakura_data_final', JSON.stringify(datosMensuales));
-  }, [datosMensuales]);
+  const [showEditModal, setShowEditModal] = useState(null);
 
   const mesActualKey = meses[mesIndice];
+  const anioActual = new Date().getFullYear();
+
+  useEffect(() => {
+    localStorage.setItem('sakura_data_v2', JSON.stringify(datosMensuales));
+  }, [datosMensuales]);
+
   const currentData = datosMensuales[mesActualKey] || {
-    meta: 50, horas: 0, minutos: 0, revisitas: 0, estudios: []
+    meta: 50, horas: 0, minutos: 0, revisitas: 0, estudiantes: [], diasActivos: [] 
   };
 
   const updateCurrentMonth = (newData) => {
     setDatosMensuales(prev => ({
-      ...prev, [mesActualKey]: { ...currentData, ...newData }
+      ...prev,
+      [mesActualKey]: { ...currentData, ...newData }
     }));
-  };
-
-  // --- TU MENSAJE PERSONALIZADO ---
-  const enviarWhatsApp = () => {
-    const mensaje = `🌸 *Mi informe* 🌸%0A%0A` +
-                    `⏱️ *Horas:* ${currentData.horas}h ${currentData.minutos}m%0A` +
-                    `📖 *Cursos Bíblicos:* ${(currentData.estudios || []).length}`;
-    
-    window.open(`https://wa.me/?text=${mensaje}`, '_blank');
   };
 
   const [nuevaHora, setNuevaHora] = useState('');
   const [nuevoMinuto, setNuevoMinuto] = useState('');
-  const [estudioTemp, setEstudioTemp] = useState({ nombre: '', fecha: '', leccion: '' });
+  const [nuevoEstudiante, setNuevoEstudiante] = useState({ nombre: '', fecha: '', leccion: '', notas: '' });
 
-  const agregarTiempo = () => {
+  const registrarActividad = () => {
     let h = parseInt(nuevaHora) || 0;
     let m = parseInt(nuevoMinuto) || 0;
     if (h > 0 || m > 0) {
-      const totalMinutos = (currentData.horas * 60) + currentData.minutos + (h * 60) + m;
-      updateCurrentMonth({ horas: Math.floor(totalMinutos / 60), minutos: totalMinutos % 60 });
+      const totalMinutosActuales = (currentData.horas * 60) + currentData.minutos;
+      const nuevoTotalMinutos = totalMinutosActuales + (h * 60) + m;
+      updateCurrentMonth({
+        horas: Math.floor(nuevoTotalMinutos / 60),
+        minutos: nuevoTotalMinutos % 60
+      });
       setNuevaHora(''); setNuevoMinuto('');
     }
   };
 
-  const agregarEstudio = () => {
-    if (estudioTemp.nombre) {
-      const listaActual = currentData.estudios || [];
-      updateCurrentMonth({ estudios: [...listaActual, { ...estudioTemp, id: Date.now() }] });
-      setEstudioTemp({ nombre: '', fecha: '', leccion: '' });
+  // --- FUNCIÓN DE WHATSAPP MEJORADA ---
+  const enviarWhatsApp = () => {
+    const mensaje = `🌸 *Mi informe* 🌸%0A%0A⏱️ *Horas:* ${currentData.horas}h ${currentData.minutos}m%0A📖 *Cursos Bíblicos:* ${currentData.estudiantes.length}%0A%0A_Enviado desde mi Registro Sakura_ 🌸`;
+    
+    const url = `https://wa.me/?text=${mensaje}`;
+    
+    // Intento de apertura directa para evitar bloqueos en PWA
+    const win = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!win) {
+      window.location.assign(url); // Fallback si el popup es bloqueado
     }
   };
 
-  const porcentaje = Math.min(100, (currentData.horas / currentData.meta) * 100);
+  const porcentaje = Math.min(100, (((currentData.horas * 60) + currentData.minutos) / (currentData.meta * 60)) * 100);
+
+  const SakuraIcon = ({ className }) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M12,22C12,22 15,18.5 15,15.5C15,13.5 13.5,12 12,12C10.5,12 9,13.5 9,15.5C9,18.5 12,22 12,22M12,2C12,2 9,5.5 9,8.5C9,10.5 10.5,12 12,12C13.5,12 15,10.5 15,8.5C15,5.5 12,2 12,2M2,12C2,12 5.5,15 8.5,15C10.5,15 12,13.5 12,12C12,10.5 10.5,9 8.5,9C5.5,9 2,12 2,12M22,12C22,12 18.5,9 15.5,9C13.5,9 12,10.5 12,12C12,13.5 13.5,15 15.5,15C18.5,15 22,12 22,12Z" />
+    </svg>
+  );
 
   return (
-    <div className="min-h-screen bg-[#fff5f7] p-4 font-sans text-slate-800 pb-20">
-      <div className="max-w-md mx-auto">
-        
-        {/* Mes y Navegación */}
-        <nav className="flex items-center justify-between mb-6 bg-white/80 backdrop-blur-sm p-4 rounded-3xl shadow-sm border border-pink-100">
-          <button onClick={() => setMesIndice((mesIndice - 1 + 12) % 12)} className="text-pink-400"><ChevronLeft /></button>
-          <div className="text-center">
-            <h1 className="text-xl font-black text-pink-600 uppercase italic tracking-tighter">{mesActualKey}</h1>
-          </div>
-          <button onClick={() => setMesIndice((mesIndice + 1) % 12)} className="text-pink-400"><ChevronRight /></button>
-        </nav>
+    <div className="min-h-screen bg-[#fffafa] p-4 md:p-10 font-sans text-slate-700 relative overflow-x-hidden">
+      <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden opacity-20">
+        <SakuraIcon className="absolute top-10 left-10 w-32 h-32 text-pink-200 rotate-12" />
+        <SakuraIcon className="absolute bottom-20 right-10 w-48 h-48 text-pink-100 -rotate-12" />
+      </div>
 
-        {/* Meta de Horas */}
-        <section className="bg-white p-5 rounded-[2rem] shadow-md border border-pink-50 mb-6">
-          <div className="flex justify-between items-center mb-3">
-            <div className="flex items-center gap-2">
-              <div className="bg-pink-100 p-2 rounded-xl text-pink-500"><Target size={18}/></div>
-              <input type="number" value={currentData.meta} onChange={(e) => updateCurrentMonth({ meta: Number(e.target.value) })} className="w-10 font-bold text-lg text-pink-600 bg-transparent focus:outline-none" />
-              <span className="text-xs font-bold text-pink-300 uppercase tracking-widest">Horas Meta</span>
+      <div className="max-w-5xl mx-auto relative z-10">
+        <header className="text-center mb-10">
+          <div className="flex justify-center mb-2">
+            <SakuraIcon className="w-12 h-12 text-pink-400 animate-pulse" />
+          </div>
+          <h1 className="text-5xl font-serif font-bold text-pink-600 tracking-tight italic">Ministerio Sakura</h1>
+          <p className="text-pink-300 font-bold uppercase tracking-[0.4em] text-[10px] mt-2">Organización Personal</p>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="lg:col-span-2 bg-white/70 backdrop-blur-xl p-6 rounded-[3rem] shadow-sm border border-pink-50 flex items-center justify-between">
+            <button onClick={() => setMesIndice((mesIndice - 1 + 12) % 12)} className="p-3 text-pink-300"><ChevronLeft size={32} /></button>
+            <div className="text-center">
+              <h2 className="text-3xl font-serif font-bold text-pink-500">{mesActualKey}</h2>
+              <p className="text-[10px] font-black text-pink-200 tracking-widest uppercase">Mes de Servicio</p>
             </div>
-            <span className="font-black text-pink-500">{porcentaje.toFixed(0)}%</span>
+            <button onClick={() => setMesIndice((mesIndice + 1) % 12)} className="p-3 text-pink-300"><ChevronRight size={32} /></button>
           </div>
-          <div className="h-2 w-full bg-pink-50 rounded-full overflow-hidden">
-            <div className="h-full bg-pink-400 transition-all duration-500" style={{ width: `${porcentaje}%` }} />
-          </div>
-        </section>
 
-        {/* Registro Diario */}
-        <section className="bg-white p-5 rounded-[2rem] shadow-md border border-pink-50 mb-6">
-          <h2 className="text-[10px] font-black uppercase text-pink-300 mb-4 flex items-center gap-2"><Timer size={14} /> Registro Diario</h2>
-          <div className="flex gap-2">
-            <input type="number" placeholder="H" value={nuevaHora} onChange={e => setNuevaHora(e.target.value)} className="w-full bg-pink-50/50 rounded-2xl p-3 text-center font-bold text-pink-600 focus:ring-1 focus:ring-pink-200 outline-none" />
-            <input type="number" placeholder="M" value={nuevoMinuto} onChange={e => setNuevoMinuto(e.target.value)} className="w-full bg-pink-50/50 rounded-2xl p-3 text-center font-bold text-pink-600 focus:ring-1 focus:ring-pink-200 outline-none" />
-            <button onClick={agregarTiempo} className="bg-pink-500 text-white px-6 rounded-2xl font-black text-xl shadow-lg shadow-pink-100 active:scale-90 transition-transform">+</button>
-          </div>
-        </section>
-
-        {/* CURSOS BÍBLICOS (Tal cual lo pediste) */}
-        <section className="bg-white p-5 rounded-[2rem] shadow-md border border-pink-50 mb-6">
-          <h2 className="text-[10px] font-black uppercase text-pink-300 mb-4 flex items-center gap-2"><Book size={14} /> Cursos Bíblicos</h2>
-          <div className="space-y-2 mb-4">
-            <input type="text" placeholder="Nombre del estudiante" value={estudioTemp.nombre} onChange={e => setEstudioTemp({...estudioTemp, nombre: e.target.value})} className="w-full bg-pink-50/30 border border-pink-100 rounded-xl p-3 text-sm outline-none" />
-            <div className="flex gap-2">
-              <input type="date" value={estudioTemp.fecha} onChange={e => setEstudioTemp({...estudioTemp, fecha: e.target.value})} className="w-full bg-pink-50/30 border border-pink-100 rounded-xl p-3 text-[10px] text-pink-400 outline-none" />
-              <input type="text" placeholder="Lección/Cap." value={estudioTemp.leccion} onChange={e => setEstudioTemp({...estudioTemp, leccion: e.target.value})} className="w-full bg-pink-50/30 border border-pink-100 rounded-xl p-3 text-sm outline-none" />
+          <div className="bg-gradient-to-br from-pink-400 to-pink-500 p-6 rounded-[3rem] shadow-lg text-white flex flex-col justify-center">
+            <div className="flex justify-between items-center mb-2">
+              <Target size={20} className="opacity-80" />
+              <span className="text-[10px] font-black uppercase tracking-widest">Meta Mensual</span>
             </div>
-            <button onClick={agregarEstudio} className="w-full bg-pink-500 text-white p-3 rounded-2xl font-black text-xs uppercase flex items-center justify-center gap-2 shadow-md active:scale-95 transition-transform">
-              <UserPlus size={16}/> Registrar Visita
-            </button>
+            <div className="flex items-center gap-3">
+              <input 
+                type="number" 
+                value={currentData.meta} 
+                onChange={(e) => updateCurrentMonth({ meta: Number(e.target.value) })}
+                className="bg-white/20 w-20 text-3xl font-black rounded-2xl text-center focus:outline-none"
+              />
+              <span className="text-xl font-serif italic">horas</span>
+            </div>
           </div>
-          {/* Lista de Estudios Registrados */}
-          <div className="space-y-2">
-            {(currentData.estudios || []).map(est => (
-              <div key={est.id} className="flex justify-between items-center bg-pink-50/20 p-3 rounded-2xl border border-pink-50 animate-in fade-in slide-in-from-top-1">
-                <div className="flex flex-col">
-                  <span className="font-bold text-pink-700 text-sm">{est.nombre}</span>
-                  <span className="text-[10px] text-pink-300 font-bold">{est.fecha} — {est.leccion}</span>
-                </div>
-                <button onClick={() => updateCurrentMonth({ estudios: currentData.estudios.filter(e => e.id !== est.id) })} className="text-pink-200 hover:text-red-400 transition-colors"><Trash2 size={16}/></button>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Resumen Mensual Visual */}
-        <section className="bg-pink-600 p-6 rounded-[2.5rem] shadow-xl text-white mb-6">
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div><p className="text-[10px] font-bold uppercase opacity-60 italic">Tiempo Total</p><p className="text-2xl font-black">{currentData.horas}h {currentData.minutos}m</p></div>
-            <div><p className="text-[10px] font-bold uppercase opacity-60 italic">Estudios</p><p className="text-2xl font-black">{(currentData.estudios || []).length}</p></div>
-          </div>
-        </section>
-
-        {/* Botones de Acción */}
-        <div className="flex flex-col gap-3">
-          <button onClick={() => alert("✅ ¡Tus datos se han guardado correctamente en este dispositivo!")} className="w-full bg-white border-2 border-pink-100 text-pink-400 p-4 rounded-3xl font-black uppercase flex items-center justify-center gap-3 text-sm shadow-sm active:bg-pink-50 transition-colors">
-            <Save size={18} /> Guardar Borrador
-          </button>
-          <button onClick={enviarWhatsApp} className="w-full bg-pink-500 text-white p-4 rounded-3xl font-black uppercase flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-all">
-            <Send size={18} /> Enviar Informe por WhatsApp
-          </button>
         </div>
 
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-4 space-y-8">
+            <section className="bg-white p-8 rounded-[3rem] shadow-sm border border-pink-50">
+              <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest mb-6 flex items-center gap-2"><Timer size={16} /> Registro de Hoy</h3>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="relative">
+                  <input type="number" placeholder="Hrs" className="w-full bg-pink-50/30 border-b-2 border-pink-100 p-4 text-2xl font-black text-pink-600 focus:outline-none" value={nuevaHora} onChange={e => setNuevaHora(e.target.value)}/>
+                </div>
+                <div className="relative">
+                  <input type="number" placeholder="Min" className="w-full bg-pink-50/30 border-b-2 border-pink-100 p-4 text-2xl font-black text-pink-600 focus:outline-none" value={nuevoMinuto} onChange={e => setNuevoMinuto(e.target.value)}/>
+                </div>
+              </div>
+              <button onClick={registrarActividad} className="w-full bg-pink-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-pink-100 active:scale-95 transition-all">Añadir al Informe</button>
+            </section>
+          </div>
+
+          <div className="lg:col-span-8 space-y-8">
+            <section className="bg-white/80 backdrop-blur-md p-10 rounded-[4rem] shadow-xl border border-pink-50 text-center">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+                <div className="p-4 bg-pink-50/50 rounded-[2rem]">
+                  <p className="text-[10px] font-black text-pink-300 uppercase mb-1">Horas</p>
+                  <p className="text-2xl font-black text-pink-600">{currentData.horas}h {currentData.minutos}m</p>
+                </div>
+                <div className="p-4 bg-pink-50/50 rounded-[2rem]">
+                  <p className="text-[10px] font-black text-pink-300 uppercase mb-1">Cursos</p>
+                  <p className="text-2xl font-black text-pink-600">{currentData.estudiantes.length}</p>
+                </div>
+                <div className="p-4 bg-pink-600 rounded-[2rem] text-white">
+                  <p className="text-[10px] font-black opacity-70 uppercase mb-1">Faltan</p>
+                  <p className="text-2xl font-black">{Math.max(0, currentData.meta - currentData.horas)}h</p>
+                </div>
+                <button onClick={() => {if(window.confirm("¿Borrar informe del mes?")) updateCurrentMonth({horas:0, minutos:0, estudiantes:[]})}} className="p-4 bg-pink-50 text-pink-200 rounded-[2rem] flex items-center justify-center hover:text-pink-400">
+                  <Trash2 size={24} />
+                </button>
+              </div>
+
+              <button 
+                onClick={enviarWhatsApp}
+                className="w-full bg-[#25D366] text-white py-6 rounded-[2.5rem] font-black uppercase tracking-widest text-sm shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-4"
+              >
+                <Send size={24} /> Enviar Informe por WhatsApp
+              </button>
+            </section>
+
+            <section className="bg-white p-8 rounded-[4rem] shadow-sm border border-pink-50">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest flex items-center gap-2"><BookOpen size={16} /> Gestión de Estudiantes</h3>
+                <button onClick={() => setShowEditModal('nuevo')} className="bg-pink-100 text-pink-500 px-4 py-2 rounded-full text-xs font-bold hover:bg-pink-200 transition-all flex items-center gap-2">
+                  <UserPlus size={14} /> Añadir
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentData.estudiantes.map(est => (
+                  <div key={est.id} className="group relative p-5 bg-pink-50/30 rounded-3xl border border-transparent hover:border-pink-200 transition-all flex justify-between items-center">
+                    <div>
+                      <p className="font-bold text-pink-700 text-sm">{est.nombre}</p>
+                      <p className="text-[10px] font-bold text-pink-400 uppercase">{est.leccion}</p>
+                    </div>
+                    <button onClick={() => updateCurrentMonth({ estudiantes: currentData.estudiantes.filter(e => e.id !== est.id) })} className="text-pink-200 hover:text-red-400"><Trash2 size={16} /></button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        </div>
       </div>
+
+      {/* MODAL MANTENIENDO LA ESTÉTICA */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-[100] bg-pink-900/20 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="bg-white w-full max-w-md rounded-[3rem] p-8 shadow-2xl border border-pink-100">
+            <div className="flex justify-between items-center mb-6">
+              <h4 className="text-xl font-serif font-bold text-pink-600">Nuevo Estudiante</h4>
+              <button onClick={() => setShowEditModal(null)} className="text-pink-200"><X /></button>
+            </div>
+            <div className="space-y-4">
+              <input type="text" placeholder="Nombre" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={nuevoEstudiante.nombre} onChange={e => setNuevoEstudiante({...nuevoEstudiante, nombre: e.target.value})}/>
+              <input type="text" placeholder="Lección" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={nuevoEstudiante.leccion} onChange={e => setNuevoEstudiante({...nuevoEstudiante, leccion: e.target.value})}/>
+              <button onClick={() => {
+                if(nuevoEstudiante.nombre) {
+                  updateCurrentMonth({ estudiantes: [...currentData.estudiantes, { ...nuevoEstudiante, id: Date.now() }] });
+                  setNuevoEstudiante({ nombre: '', fecha: '', leccion: '', notas: '' });
+                  setShowEditModal(null);
+                }
+              }} className="w-full bg-pink-500 text-white py-4 rounded-2xl font-bold uppercase tracking-widest text-xs">Guardar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+        .font-serif { font-family: 'Playfair Display', serif; }
+      `}</style>
     </div>
   );
 };
