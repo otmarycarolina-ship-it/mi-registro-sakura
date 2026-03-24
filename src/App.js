@@ -58,18 +58,27 @@ const App = () => {
     updateCurrentMonth({ diasActivos: nuevosDias });
   };
 
+  // Función modificada para abrir la APP directamente
   const enviarWhatsApp = () => {
-    const mensaje = `🌸 *Mi informe* 🌸%0A%0A⏱️ *Horas:* ${currentData.horas}h ${currentData.minutos}m%0A📖 *Cursos Bíblicos:* ${currentData.estudiantes.length}%0A%0A_Enviado desde mi Registro Sakura_ 🌸`;
-    const url = `https://wa.me/?text=${mensaje}`;
-    const win = window.open(url, '_blank', 'noopener,noreferrer');
-    if (!win) window.location.assign(url);
+    const texto = `🌸 *Mi informe* 🌸\n\n⏱️ *Horas:* ${currentData.horas}h ${currentData.minutos}m\n📖 *Cursos Bíblicos:* ${currentData.estudiantes.length}\n\n_Enviado desde mi Registro Sakura_ 🌸`;
+    
+    // El protocolo whatsapp://send abre la aplicación directamente sin pasar por el navegador
+    const urlApp = `whatsapp://send?text=${encodeURIComponent(texto)}`;
+    
+    window.location.href = urlApp;
   };
 
   const porcentaje = Math.min(100, (((currentData.horas * 60) + currentData.minutos) / (currentData.meta * 60)) * 100);
 
+  // Icono actualizado a 5 pétalos según tu imagen
   const SakuraIcon = ({ className }) => (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <path d="M12,22C12,22 15,18.5 15,15.5C15,13.5 13.5,12 12,12C10.5,12 9,13.5 9,15.5C9,18.5 12,22 12,22M12,2C12,2 9,5.5 9,8.5C9,10.5 10.5,12 12,12C13.5,12 15,10.5 15,8.5C15,5.5 12,2 12,2M2,12C2,12 5.5,15 8.5,15C10.5,15 12,13.5 12,12C12,10.5 10.5,9 8.5,9C5.5,9 2,12 2,12M22,12C22,12 18.5,9 15.5,9C13.5,9 12,10.5 12,12C12,13.5 13.5,15 15.5,15C18.5,15 22,12 22,12Z" />
+      <path d="M12,12 Q12,6 15,3 Q18,6 12,12 Z" />
+      <path d="M12,12 Q18,9 21,12 Q18,15 12,12 Z" />
+      <path d="M12,12 Q15,18 12,21 Q9,18 12,12 Z" />
+      <path d="M12,12 Q6,15 3,12 Q6,9 12,12 Z" />
+      <path d="M12,12 Q8,6 5,4 Q4,8 12,12 Z" />
+      <circle cx="12" cy="12" r="1.5" className="text-white/40" />
     </svg>
   );
 
@@ -169,7 +178,7 @@ const App = () => {
                 <input type="text" placeholder="Fecha (Ej: 24/03)" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.fecha} onChange={e => setFormEstudiante({...formEstudiante, fecha: e.target.value})}/>
                 <input type="text" placeholder="Folleto / Cap" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.leccion} onChange={e => setFormEstudiante({...formEstudiante, leccion: e.target.value})}/>
               </div>
-              <textarea placeholder="Notas del estudiante..." rows="3" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none resize-none" value={formEstudiante.notas} onChange={e => setFormEstudiante({...formEstudiante, notas: e.target.value})}/>
+              <textarea placeholder="Notas del estudiante..." rows="3" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none resize-none" value={formEstudiante.notes} onChange={e => setFormEstudiante({...formEstudiante, notas: e.target.value})}/>
               <button onClick={() => {
                 if(formEstudiante.nombre) {
                   const nuevos = showEditModal === 'nuevo' ? [...currentData.estudiantes, { ...formEstudiante, id: Date.now() }] : currentData.estudiantes.map(e => e.id === showEditModal ? formEstudiante : e);
