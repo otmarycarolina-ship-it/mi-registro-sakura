@@ -58,32 +58,36 @@ const App = () => {
     updateCurrentMonth({ diasActivos: nuevosDias });
   };
 
-  // Función modificada para abrir la APP directamente
   const enviarWhatsApp = () => {
-    const texto = `🌸 *Mi informe* 🌸\n\n⏱️ *Horas:* ${currentData.horas}h ${currentData.minutos}m\n📖 *Cursos Bíblicos:* ${currentData.estudiantes.length}\n\n_Enviado desde mi Registro Sakura_ 🌸`;
-    
-    // El protocolo whatsapp://send abre la aplicación directamente sin pasar por el navegador
-    const urlApp = `whatsapp://send?text=${encodeURIComponent(texto)}`;
-    
-    window.location.href = urlApp;
+    const mensaje = `🌸 *Mi informe* 🌸%0A%0A⏱️ *Horas:* ${currentData.horas}h ${currentData.minutos}m%0A📖 *Cursos Bíblicos:* ${currentData.estudiantes.length}%0A%0A_Enviado desde mi Registro Sakura_ 🌸`;
+    const url = `https://wa.me/?text=${mensaje}`;
+    const win = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!win) window.location.assign(url);
   };
 
   const porcentaje = Math.min(100, (((currentData.horas * 60) + currentData.minutos) / (currentData.meta * 60)) * 100);
 
-  // Icono actualizado a 5 pétalos según tu imagen
+  // --- NUEVO SAKURAICON MEJORADO Y BONITO ---
   const SakuraIcon = ({ className }) => (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <path d="M12,12 Q12,6 15,3 Q18,6 12,12 Z" />
-      <path d="M12,12 Q18,9 21,12 Q18,15 12,12 Z" />
-      <path d="M12,12 Q15,18 12,21 Q9,18 12,12 Z" />
-      <path d="M12,12 Q6,15 3,12 Q6,9 12,12 Z" />
-      <path d="M12,12 Q8,6 5,4 Q4,8 12,12 Z" />
-      <circle cx="12" cy="12" r="1.5" className="text-white/40" />
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
+      {/* Pétalo Superior */}
+      <path d="M12 2.5C11 4 10.5 6.5 10.5 8.5C10.5 10.5 11.5 12 12 12C12.5 12 13.5 10.5 13.5 8.5C13.5 6.5 13 4 12 2.5Z" />
+      {/* Pétalo Superior Derecho */}
+      <path d="M19.5 7.5C18.5 6.5 16 6 14 6C12 6 11 7 11.5 7.5C12 8 13.5 9 15.5 10C17.5 11 19 11 19.5 10.5C20 10 20.5 8.5 19.5 7.5Z" />
+      {/* Pétalo Inferior Derecho */}
+      <path d="M17.5 19.5C16.5 20.5 14 20 12 20C10 20 9 19 9.5 18.5C10 18 11.5 17 13.5 16C15.5 15 17 15 17.5 15.5C18 16 18.5 18.5 17.5 19.5Z" />
+      {/* Pétalo Inferior Izquierdo */}
+      <path d="M6.5 19.5C7.5 20.5 10 20 12 20C14 20 15 19 14.5 18.5C14 18 12.5 17 10.5 16C8.5 15 7 15 6.5 15.5C6 16 5.5 18.5 6.5 19.5Z" />
+      {/* Pétalo Superior Izquierdo */}
+      <path d="M4.5 7.5C5.5 6.5 8 6 10 6C12 6 13 7 12.5 7.5C12 8 10.5 9 8.5 10C6.5 11 5 11 4.5 10.5C4 10 3.5 8.5 4.5 7.5Z" />
+      {/* Centro de la flor */}
+      <circle cx="12" cy="12" r="1.5" className="fill-white opacity-40" />
     </svg>
   );
 
   return (
     <div className="min-h-screen bg-[#fffafa] p-4 md:p-10 font-sans text-slate-700 relative overflow-x-hidden">
+      {/* Iconos de Fondo */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden opacity-10">
         <SakuraIcon className="absolute top-10 left-10 w-32 h-32 text-pink-200 rotate-12" />
         <SakuraIcon className="absolute bottom-20 right-10 w-48 h-48 text-pink-100 -rotate-12" />
