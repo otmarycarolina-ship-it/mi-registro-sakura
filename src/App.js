@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Calendar as CalendarIcon, Clock, BookOpen, Trash2, Edit3, Target, 
-  Timer, ChevronRight, ChevronLeft, UserPlus, Send, X, Play, Square
+  Timer, ChevronRight, ChevronLeft, UserPlus, Send, X, StickyNote
 } from 'lucide-react';
 
 const App = () => {
@@ -14,43 +14,6 @@ const App = () => {
   });
   const [showEditModal, setShowEditModal] = useState(null);
 
-  // --- LÓGICA DEL CRONÓMETRO ---
-  const [cronometroActivo, setCronometroActivo] = useState(false);
-  const [segundos, setSegundos] = useState(0);
-  const timerRef = useRef(null);
-
-  useEffect(() => {
-    if (cronometroActivo) {
-      timerRef.current = setInterval(() => {
-        setSegundos(s => s + 1);
-      }, 1000);
-    } else {
-      clearInterval(timerRef.current);
-    }
-    return () => clearInterval(timerRef.current);
-  }, [cronometroActivo]);
-
-  const formatTiempo = (s) => {
-    const hrs = Math.floor(s / 3600);
-    const mins = Math.floor((s % 3600) / 60);
-    const segs = s % 60;
-    return `${hrs}h ${mins}m ${segs}s`;
-  };
-
-  const detenerYGuardarCronometro = () => {
-    const hrsTranscurridas = Math.floor(segundos / 3600);
-    const minsTranscurridos = Math.floor((segundos % 3600) / 60);
-    
-    if (hrsTranscurridas > 0 || minsTranscurridos > 0) {
-      if(window.confirm(`¿Quieres añadir ${hrsTranscurridas}h ${minsTranscurridos}m a tu informe de ${meses[mesIndice]}?`)) {
-        registrarActividadManual(hrsTranscurridas, minsTranscurridos);
-      }
-    }
-    setCronometroActivo(false);
-    setSegundos(0);
-  };
-
-  // --- LÓGICA GENERAL ---
   const mesActualKey = meses[mesIndice];
   const anioActual = new Date().getFullYear();
 
@@ -73,13 +36,13 @@ const App = () => {
       totalMinutos += (dia.h * 60) + dia.m;
     });
     return {
-      horasTotales: Math.floor(totalMinutos / 60),
-      minutosTotales: totalMinutos % 60,
+      horas: Math.floor(totalMinutos / 60),
+      minutos: totalMinutos % 60,
       totalMinutos
     };
   };
 
-  const { horasTotales, minutosTotales, totalMinutos } = calcularTotales();
+  const { horas, minutos, totalMinutos } = calcularTotales();
 
   const updateCurrentMonth = (newData) => {
     setDatosMensuales(prev => ({
@@ -90,11 +53,11 @@ const App = () => {
 
   const [nuevaHora, setNuevaHora] = useState('');
   const [nuevoMinuto, setNuevoMinuto] = useState('');
-  const [formEstudiante, setFormEstudiante] = useState({ nombre: '', fecha: '', leccion: '', notas: '', horaVisita: '' });
+  const [formEstudiante, setFormEstudiante] = useState({ nombre: '', fecha: '', leccion: '', notas: '' });
 
-  const registrarActividadManual = (hManual, mManual) => {
-    let h = hManual !== undefined ? hManual : (parseInt(nuevaHora) || 0);
-    let m = mManual !== undefined ? mManual : (parseInt(nuevoMinuto) || 0);
+  const registrarActividad = () => {
+    let h = parseInt(nuevaHora) || 0;
+    let m = parseInt(nuevoMinuto) || 0;
     const hoy = new Date().getDate();
     const esMesReal = new Date().getMonth() === mesIndice;
     const diaARegistrar = esMesReal ? hoy : 1; 
@@ -121,8 +84,9 @@ const App = () => {
   };
 
   const enviarWhatsApp = () => {
-    const mensaje = `🌸 *Mi informe* 🌸\n\n⏱️ *Horas:* ${horasTotales}h ${minutosTotales}m\n📖 *Cursos Bíblicos:* ${currentData.estudiantes.length}\n\n_Enviado desde mi Registro Sakura_ 🌸`;
-    window.location.href = `whatsapp://send?text=${encodeURIComponent(mensaje)}`;
+    const mensaje = `🌸 *Mi informe* 🌸\n\n⏱️ *Horas:* ${horas}h ${minutos}m\n📖 *Cursos Bíblicos:* ${currentData.estudiantes.length}\n\n_Enviado desde mi Registro Sakura_ 🌸`;
+    const url = `whatsapp://send?text=${encodeURIComponent(mensaje)}`;
+    window.location.href = url;
   };
 
   const porcentaje = Math.min(100, (totalMinutos / (currentData.meta * 60)) * 100);
@@ -135,7 +99,7 @@ const App = () => {
       <path d="M12 12c-1.5.5-5.5 2-9.5 0 4-2 8-.5 9.5 0z" />
       <path d="M12 12c1-1.2 3.8-3.8 5.5-2.5-1.3 1.7-4.3 1.5-5.5 2.5z" />
       <path d="M12 12c1 1.2 3.8 3.8 5.5 2.5-1.3-1.7-4.3-1.5-5.5-2.5z" />
-      <path d="M12 12c-1 1.2-3.8 3.8-5.5 2.5 1.3-1.7 4.3-1.5-5.5-2.5z" />
+      <path d="M12 12c-1 1.2-3.8 3.8-5.5 2.5 1.3-1.7 4.3-1.5 5.5-2.5z" />
       <path d="M12 12c-1-1.2-3.8-3.8-5.5-2.5 1.3 1.7 4.3 1.5 5.5 2.5z" />
       <circle cx="12" cy="12" r="1.2" className="fill-white opacity-60" />
     </svg>
@@ -151,20 +115,23 @@ const App = () => {
       <div className="max-w-5xl mx-auto relative z-10">
         <header className="text-center mb-10">
           <div className="flex justify-center mb-2"><SakuraIcon className="w-12 h-12 text-pink-400 animate-pulse" /></div>
-          <h1 className="text-5xl font-serif font-bold text-pink-600 tracking-tight italic">Mi Registro Sakura</h1>
+          {/* TÍTULO ACTUALIZADO AQUÍ */}
+          <h1 className="text-5xl font-serif font-bold text-pink-600 tracking-tight italic">Mi Registro de Servicio</h1>
+          <p className="text-pink-300 font-bold uppercase tracking-[0.4em] text-[10px] mt-2">Organización Personal</p>
         </header>
 
-        {/* CONTROLES SUPERIORES */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <div className="lg:col-span-2 bg-white/70 backdrop-blur-xl p-6 rounded-[3rem] shadow-sm border border-pink-50 flex items-center justify-between">
             <button onClick={() => setMesIndice((mesIndice - 1 + 12) % 12)} className="p-3 text-pink-300"><ChevronLeft size={32} /></button>
             <div className="text-center">
               <h2 className="text-3xl font-serif font-bold text-pink-500">{mesActualKey}</h2>
+              <p className="text-[10px] font-black text-pink-200 tracking-widest uppercase">Mes de Servicio</p>
             </div>
             <button onClick={() => setMesIndice((mesIndice + 1) % 12)} className="p-3 text-pink-300"><ChevronRight size={32} /></button>
           </div>
+
           <div className="bg-gradient-to-br from-pink-400 to-pink-500 p-6 rounded-[3rem] shadow-lg text-white flex flex-col justify-center">
-            <div className="flex justify-between items-center mb-2"><Target size={20} className="opacity-80" /><span className="text-[10px] font-black uppercase tracking-widest">Meta</span></div>
+            <div className="flex justify-between items-center mb-2"><Target size={20} className="opacity-80" /><span className="text-[10px] font-black uppercase tracking-widest">Meta Mensual</span></div>
             <div className="flex items-center gap-3">
               <input type="number" value={currentData.meta} onChange={(e) => updateCurrentMonth({ meta: Number(e.target.value) })} className="bg-white/20 w-20 text-3xl font-black rounded-2xl text-center focus:outline-none"/>
               <span className="text-xl font-serif italic">horas</span>
@@ -172,85 +139,58 @@ const App = () => {
           </div>
         </div>
 
-        {/* SECCIÓN CRONÓMETRO NUEVA */}
-        <section className="mb-8 bg-white/80 backdrop-blur-md p-6 rounded-[3rem] shadow-xl border-2 border-pink-100 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className={`p-4 rounded-full ${cronometroActivo ? 'bg-pink-500 animate-pulse' : 'bg-pink-100'} text-white`}>
-              <Timer size={32} className={cronometroActivo ? 'text-white' : 'text-pink-400'} />
-            </div>
-            <div>
-              <p className="text-[10px] font-black text-pink-300 uppercase tracking-widest">Cronómetro de Servicio</p>
-              <p className="text-3xl font-black text-pink-600 font-mono">{formatTiempo(segundos)}</p>
-            </div>
-          </div>
-          <div className="flex gap-3">
-            {!cronometroActivo ? (
-              <button onClick={() => setCronometroActivo(true)} className="bg-pink-500 text-white px-8 py-4 rounded-2xl font-black uppercase text-xs shadow-lg flex items-center gap-2 active:scale-95 transition-all"><Play size={16} fill="white" /> Iniciar</button>
-            ) : (
-              <button onClick={detenerYGuardarCronometro} className="bg-red-400 text-white px-8 py-4 rounded-2xl font-black uppercase text-xs shadow-lg flex items-center gap-2 active:scale-95 transition-all"><Square size={16} fill="white" /> Detener</button>
-            )}
-          </div>
-        </section>
-
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* REGISTRO MANUAL Y CALENDARIO */}
           <div className="lg:col-span-4 space-y-8">
             <section className="bg-white p-8 rounded-[3rem] shadow-sm border border-pink-50">
-              <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest mb-6 flex items-center gap-2"><Clock size={16} /> Registro Manual</h3>
+              <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest mb-6 flex items-center gap-2"><Timer size={16} /> Registro de Hoy</h3>
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <input type="number" placeholder="Hrs" className="w-full bg-pink-50/30 border-b-2 border-pink-100 p-4 text-2xl font-black text-pink-600 focus:outline-none" value={nuevaHora} onChange={e => setNuevaHora(e.target.value)}/>
                 <input type="number" placeholder="Min" className="w-full bg-pink-50/30 border-b-2 border-pink-100 p-4 text-2xl font-black text-pink-600 focus:outline-none" value={nuevoMinuto} onChange={e => setNuevoMinuto(e.target.value)}/>
               </div>
-              <button onClick={() => registrarActividadManual()} className="w-full bg-pink-500 text-white py-4 rounded-2xl font-black uppercase text-xs shadow-lg">Añadir Tiempo</button>
+              <button onClick={registrarActividad} className="w-full bg-pink-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-pink-100 active:scale-95 transition-all">Añadir al Informe</button>
             </section>
+
             <section className="bg-white p-8 rounded-[3rem] shadow-sm border border-pink-50">
-              <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest mb-6 flex items-center gap-2"><CalendarIcon size={16} /> Días Activos</h3>
+              <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest mb-6 flex items-center gap-2"><CalendarIcon size={16} /> Actividad en {mesActualKey}</h3>
               <div className="grid grid-cols-7 gap-2">
                 {[...Array(totalDiasMes)].map((_, i) => {
                   const dia = i + 1;
                   const tieneActividad = currentData.historial && currentData.historial[dia];
                   return (
-                    <button key={dia} onClick={() => tieneActividad && window.confirm(`¿Borrar día ${dia}?`) && eliminarDia(dia)}
-                      className={`aspect-square rounded-full text-[10px] font-bold ${tieneActividad ? 'bg-pink-400 text-white' : 'bg-pink-50 text-pink-200'}`}>{dia}</button>
+                    <button 
+                      key={dia} 
+                      onClick={() => tieneActividad && window.confirm(`¿Borrar actividad del día ${dia}?`) && eliminarDia(dia)}
+                      className={`aspect-square rounded-full text-[10px] font-bold transition-all ${tieneActividad ? 'bg-pink-400 text-white shadow-md shadow-pink-100' : 'bg-pink-50 text-pink-200 hover:bg-pink-100'}`}
+                    >
+                      {dia}
+                    </button>
                   );
                 })}
               </div>
+              <p className="text-[9px] text-pink-300 mt-4 text-center italic">* Pulsa un día activo para borrar su tiempo</p>
             </section>
           </div>
 
-          {/* INFORME Y ESTUDIANTES */}
           <div className="lg:col-span-8 space-y-8">
             <section className="bg-white/80 backdrop-blur-md p-10 rounded-[4rem] shadow-xl border border-pink-50 text-center">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8">
-                <div className="p-4 bg-pink-50/50 rounded-[2rem]"><p className="text-[10px] font-black text-pink-300 uppercase">Horas</p><p className="text-2xl font-black text-pink-600">{horasTotales}h {minutosTotales}m</p></div>
-                <div className="p-4 bg-pink-50/50 rounded-[2rem]"><p className="text-[10px] font-black text-pink-300 uppercase">Cursos</p><p className="text-2xl font-black text-pink-600">{currentData.estudiantes.length}</p></div>
-                <div className="p-4 bg-pink-600 rounded-[2rem] text-white"><p className="text-[10px] font-black opacity-70 uppercase font-bold">Avance</p><p className="text-2xl font-black">{porcentaje.toFixed(0)}%</p></div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10 text-center">
+                <div className="p-4 bg-pink-50/50 rounded-[2rem]"><p className="text-[10px] font-black text-pink-300 uppercase mb-1">Horas</p><p className="text-2xl font-black text-pink-600">{horas}h {minutos}m</p></div>
+                <div className="p-4 bg-pink-50/50 rounded-[2rem]"><p className="text-[10px] font-black text-pink-300 uppercase mb-1">Cursos</p><p className="text-2xl font-black text-pink-600">{currentData.estudiantes.length}</p></div>
+                <div className="p-4 bg-pink-600 rounded-[2rem] text-white"><p className="text-[10px] font-black opacity-70 uppercase mb-1 font-bold">Porcentaje</p><p className="text-2xl font-black">{porcentaje.toFixed(0)}%</p></div>
+                <button onClick={() => {if(window.confirm("¿Borrar informe completo del mes?")) updateCurrentMonth({historial:{}, estudiantes:[]})}} className="p-4 bg-pink-50 text-pink-200 rounded-[2rem] flex items-center justify-center hover:text-pink-400 transition-colors"><Trash2 size={24} /></button>
               </div>
-              {/* BOTÓN WHATSAPP MEJORADO ESTILO IMAGEN */}
-              <button onClick={enviarWhatsApp} className="w-full bg-[#25D366] text-white py-6 rounded-[2.5rem] font-black uppercase tracking-widest text-sm shadow-[0_20px_50px_rgba(37,211,102,0.3)] hover:shadow-none active:scale-95 transition-all flex items-center justify-center gap-4">
-                <Send size={24} /> ENVIAR INFORME POR WHATSAPP
-              </button>
+              <button onClick={enviarWhatsApp} className="w-full bg-[#25D366] text-white py-6 rounded-[2.5rem] font-black uppercase tracking-widest text-sm shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-4"><Send size={24} /> ENVIAR INFORME POR WHATSAPP</button>
             </section>
 
             <section className="bg-white p-8 rounded-[4rem] shadow-sm border border-pink-50">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest flex items-center gap-2"><BookOpen size={16} /> Mis Estudiantes</h3>
-                <button onClick={() => {setFormEstudiante({nombre:'', fecha:'', leccion:'', notas:'', horaVisita: ''}); setShowEditModal('nuevo')}} className="bg-pink-100 text-pink-500 px-4 py-2 rounded-full text-xs font-bold hover:bg-pink-200 flex items-center gap-2 transition-all"><UserPlus size={14} /> Nuevo</button>
+                <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest flex items-center gap-2"><BookOpen size={16} /> Gestión de Estudiantes</h3>
+                <button onClick={() => {setFormEstudiante({nombre:'', fecha:'', leccion:'', notas:''}); setShowEditModal('nuevo')}} className="bg-pink-100 text-pink-500 px-4 py-2 rounded-full text-xs font-bold hover:bg-pink-200 flex items-center gap-2 transition-all"><UserPlus size={14} /> Añadir</button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {currentData.estudiantes.map(est => (
                   <div key={est.id} onClick={() => {setFormEstudiante(est); setShowEditModal(est.id)}} className="p-5 bg-pink-50/30 rounded-3xl border border-transparent flex justify-between items-center cursor-pointer hover:border-pink-200 transition-all">
-                    <div>
-                      <p className="font-bold text-pink-700 text-sm">{est.nombre}</p>
-                      <div className="flex flex-col">
-                        <p className="text-[10px] font-bold text-pink-400 uppercase tracking-widest">{est.fecha} • {est.leccion}</p>
-                        {est.horaVisita && (
-                          <p className="text-[10px] font-black text-pink-500 mt-1 flex items-center gap-1 italic">
-                            <Clock size={10} /> Visita: {est.horaVisita}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                    <div><p className="font-bold text-pink-700 text-sm">{est.nombre}</p><p className="text-[10px] font-bold text-pink-400 uppercase tracking-widest">{est.fecha} • {est.leccion}</p></div>
                     <button onClick={(e) => {e.stopPropagation(); updateCurrentMonth({ estudiantes: currentData.estudiantes.filter(i => i.id !== est.id) })}} className="text-pink-200 hover:text-red-400"><Trash2 size={16} /></button>
                   </div>
                 ))}
@@ -260,7 +200,6 @@ const App = () => {
         </div>
       </div>
 
-      {/* MODAL ESTUDIANTE CON CAMPO DE HORA */}
       {showEditModal && (
         <div className="fixed inset-0 z-[100] bg-pink-900/20 backdrop-blur-sm flex items-center justify-center p-6">
           <div className="bg-white w-full max-w-md rounded-[3rem] p-8 shadow-2xl border border-pink-100">
@@ -274,18 +213,14 @@ const App = () => {
                 <input type="text" placeholder="Fecha (Ej: 24/03)" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.fecha} onChange={e => setFormEstudiante({...formEstudiante, fecha: e.target.value})}/>
                 <input type="text" placeholder="Folleto / Cap" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.leccion} onChange={e => setFormEstudiante({...formEstudiante, leccion: e.target.value})}/>
               </div>
-              <div className="flex items-center gap-3 bg-pink-50 rounded-2xl p-4 border border-pink-100">
-                <Clock size={18} className="text-pink-400" />
-                <input type="text" placeholder="Hora de visita (Ej: 3:00 PM)" className="bg-transparent w-full text-sm focus:outline-none font-bold text-pink-600" value={formEstudiante.horaVisita} onChange={e => setFormEstudiante({...formEstudiante, horaVisita: e.target.value})}/>
-              </div>
-              <textarea placeholder="Notas adicionales..." rows="3" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none resize-none" value={formEstudiante.notas} onChange={e => setFormEstudiante({...formEstudiante, notas: e.target.value})}/>
+              <textarea placeholder="Notas del estudiante..." rows="3" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none resize-none" value={formEstudiante.notes} onChange={e => setFormEstudiante({...formEstudiante, notas: e.target.value})}/>
               <button onClick={() => {
                 if(formEstudiante.nombre) {
                   const nuevos = showEditModal === 'nuevo' ? [...currentData.estudiantes, { ...formEstudiante, id: Date.now() }] : currentData.estudiantes.map(e => e.id === showEditModal ? formEstudiante : e);
                   updateCurrentMonth({ estudiantes: nuevos });
                   setShowEditModal(null);
                 }
-              }} className="w-full bg-pink-500 text-white py-4 rounded-2xl font-bold uppercase tracking-widest text-xs shadow-lg active:scale-95 transition-all">Guardar Datos</button>
+              }} className="w-full bg-pink-500 text-white py-4 rounded-2xl font-bold uppercase tracking-widest text-xs">Guardar</button>
             </div>
           </div>
         </div>
