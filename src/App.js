@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Calendar as CalendarIcon, Clock, BookOpen, Trash2, Edit3, Target, 
-  Timer, ChevronRight, ChevronLeft, UserPlus, Send, X, StickyNote
+  Timer, ChevronRight, ChevronLeft, UserPlus, Send, X, StickyNote, Bell
 } from 'lucide-react';
 
 const App = () => {
@@ -20,8 +20,45 @@ const App = () => {
   const getDiasEnMes = (month, year) => new Date(year, month + 1, 0).getDate();
   const totalDiasMes = getDiasEnMes(mesIndice, anioActual);
 
+  // --- LÓGICA DE PERSISTENCIA ---
   useEffect(() => {
     localStorage.setItem('sakura_data_v5', JSON.stringify(datosMensuales));
+  }, [datosMensuales]);
+
+  // --- LÓGICA DE NOTIFICACIONES Y ALARMAS ---
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  useEffect(() => {
+    const revisarAlarmas = () => {
+      const ahora = new Date();
+      const horaActual = `${ahora.getHours().toString().padStart(2, '0')}:${ahora.getMinutes().toString().padStart(2, '0')}`;
+
+      // Revisar todos los meses para no perder citas si cambias de vista
+      Object.values(datosMensuales).forEach(mes => {
+        mes.estudiantes?.forEach(est => {
+          if (est.horaAlarma === horaActual) {
+            // 1. Sonido (Debe estar en /public/alarma.mp3)
+            const audio = new Audio('/alarma.mp3');
+            audio.play().catch(e => console.log("Interacción requerida para sonido"));
+
+            // 2. Notificación Nativa
+            if (Notification.permission === "granted") {
+              new Notification(`🌸 Cita con ${est.nombre}`, {
+                body: `Es momento de tu visita. Notas: ${est.notas || 'Sin notas'}`,
+                icon: '/favicon.ico'
+              });
+            }
+          }
+        });
+      });
+    };
+
+    const timer = setInterval(revisarAlarmas, 60000); // Revisar cada minuto
+    return () => clearInterval(timer);
   }, [datosMensuales]);
 
   const currentData = datosMensuales[mesActualKey] || {
@@ -53,7 +90,7 @@ const App = () => {
 
   const [nuevaHora, setNuevaHora] = useState('');
   const [nuevoMinuto, setNuevoMinuto] = useState('');
-  const [formEstudiante, setFormEstudiante] = useState({ nombre: '', fecha: '', leccion: '', notas: '' });
+  const [formEstudiante, setFormEstudiante] = useState({ nombre: '', fecha: '', leccion: '', notas: '', horaAlarma: '' });
 
   const registrarActividad = () => {
     let h = parseInt(nuevaHora) || 0;
@@ -99,7 +136,7 @@ const App = () => {
       <path d="M12 12c-1.5.5-5.5 2-9.5 0 4-2 8-.5 9.5 0z" />
       <path d="M12 12c1-1.2 3.8-3.8 5.5-2.5-1.3 1.7-4.3 1.5-5.5 2.5z" />
       <path d="M12 12c1 1.2 3.8 3.8 5.5 2.5-1.3-1.7-4.3-1.5-5.5-2.5z" />
-      <path d="M12 12c-1 1.2-3.8 3.8-5.5 2.5 1.3-1.7 4.3-1.5 5.5-2.5z" />
+      <path d="M12 12c-1 1.2-3.8 3.8-5.5 2.5 1.3-1.7 4.3-1.5-5.5-2.5z" />
       <path d="M12 12c-1-1.2-3.8-3.8-5.5-2.5 1.3 1.7 4.3 1.5 5.5 2.5z" />
       <circle cx="12" cy="12" r="1.2" className="fill-white opacity-60" />
     </svg>
@@ -115,7 +152,6 @@ const App = () => {
       <div className="max-w-5xl mx-auto relative z-10">
         <header className="text-center mb-10">
           <div className="flex justify-center mb-2"><SakuraIcon className="w-12 h-12 text-pink-400 animate-pulse" /></div>
-          {/* TÍTULO ACTUALIZADO AQUÍ */}
           <h1 className="text-5xl font-serif font-bold text-pink-600 tracking-tight italic">Mi Registro de Servicio</h1>
           <p className="text-pink-300 font-bold uppercase tracking-[0.4em] text-[10px] mt-2">Organización Personal</p>
         </header>
@@ -185,12 +221,20 @@ const App = () => {
             <section className="bg-white p-8 rounded-[4rem] shadow-sm border border-pink-50">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest flex items-center gap-2"><BookOpen size={16} /> Gestión de Estudiantes</h3>
-                <button onClick={() => {setFormEstudiante({nombre:'', fecha:'', leccion:'', notas:''}); setShowEditModal('nuevo')}} className="bg-pink-100 text-pink-500 px-4 py-2 rounded-full text-xs font-bold hover:bg-pink-200 flex items-center gap-2 transition-all"><UserPlus size={14} /> Añadir</button>
+                <button onClick={() => {setFormEstudiante({nombre:'', fecha:'', leccion:'', notas:'', horaAlarma: ''}); setShowEditModal('nuevo')}} className="bg-pink-100 text-pink-500 px-4 py-2 rounded-full text-xs font-bold hover:bg-pink-200 flex items-center gap-2 transition-all"><UserPlus size={14} /> Añadir</button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {currentData.estudiantes.map(est => (
                   <div key={est.id} onClick={() => {setFormEstudiante(est); setShowEditModal(est.id)}} className="p-5 bg-pink-50/30 rounded-3xl border border-transparent flex justify-between items-center cursor-pointer hover:border-pink-200 transition-all">
-                    <div><p className="font-bold text-pink-700 text-sm">{est.nombre}</p><p className="text-[10px] font-bold text-pink-400 uppercase tracking-widest">{est.fecha} • {est.leccion}</p></div>
+                    <div className="flex flex-col">
+                      <p className="font-bold text-pink-700 text-sm">{est.nombre}</p>
+                      <p className="text-[10px] font-bold text-pink-400 uppercase tracking-widest">{est.fecha} • {est.leccion}</p>
+                      {est.horaAlarma && (
+                        <span className="flex items-center gap-1 text-[9px] text-pink-400 font-bold mt-1">
+                          <Bell size={10} /> {est.horaAlarma}
+                        </span>
+                      )}
+                    </div>
                     <button onClick={(e) => {e.stopPropagation(); updateCurrentMonth({ estudiantes: currentData.estudiantes.filter(i => i.id !== est.id) })}} className="text-pink-200 hover:text-red-400"><Trash2 size={16} /></button>
                   </div>
                 ))}
@@ -213,7 +257,15 @@ const App = () => {
                 <input type="text" placeholder="Fecha (Ej: 24/03)" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.fecha} onChange={e => setFormEstudiante({...formEstudiante, fecha: e.target.value})}/>
                 <input type="text" placeholder="Folleto / Cap" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.leccion} onChange={e => setFormEstudiante({...formEstudiante, leccion: e.target.value})}/>
               </div>
-              <textarea placeholder="Notas del estudiante..." rows="3" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none resize-none" value={formEstudiante.notes} onChange={e => setFormEstudiante({...formEstudiante, notas: e.target.value})}/>
+              
+              {/* CAMPO DE HORA DE ALARMA */}
+              <div className="flex items-center gap-3 bg-pink-50 border border-pink-100 rounded-2xl p-4">
+                <Bell size={18} className="text-pink-400" />
+                <label className="text-[10px] font-black text-pink-300 uppercase tracking-widest">Alarma:</label>
+                <input type="time" className="bg-transparent text-pink-600 font-bold focus:outline-none flex-1 text-sm" value={formEstudiante.horaAlarma || ''} onChange={e => setFormEstudiante({...formEstudiante, horaAlarma: e.target.value})}/>
+              </div>
+
+              <textarea placeholder="Notas del estudiante..." rows="3" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none resize-none" value={formEstudiante.notas} onChange={e => setFormEstudiante({...formEstudiante, notas: e.target.value})}/>
               <button onClick={() => {
                 if(formEstudiante.nombre) {
                   const nuevos = showEditModal === 'nuevo' ? [...currentData.estudiantes, { ...formEstudiante, id: Date.now() }] : currentData.estudiantes.map(e => e.id === showEditModal ? formEstudiante : e);
