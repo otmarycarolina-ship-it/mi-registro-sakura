@@ -124,17 +124,19 @@ const App = () => {
 
   const porcentaje = Math.min(100, (totalMinutos / (currentData.meta * 60)) * 100);
 
-  // ESTA ES TU FLOR ANTERIOR DETALLADA
+  // FLOR CORREGIDA CON EXACTAMENTE 8 PÉTALOS
   const SakuraIcon = ({ className }) => (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
+      {/* Pétalos Principales (Cruz) */}
       <path d="M12 12c.5-1.5 2-5.5 0-9.5-2 4-.5 8 0 9.5z" />
       <path d="M12 12c1.5-.5 5.5-2 9.5 0-4 2-8 .5-9.5 0z" />
       <path d="M12 12c-.5 1.5-2 5.5 0 9.5 2-4 .5-8 0-9.5z" />
       <path d="M12 12c-1.5.5-5.5 2-9.5 0 4-2 8-.5 9.5 0z" />
-      <path d="M12 12c1-1.2 3.8-3.8 5.5-2.5-1.3 1.7-4.3 1.5-5.5 2.5z" />
-      <path d="M12 12c1 1.2 3.8 3.8 5.5 2.5-1.3-1.7-4.3-1.5-5.5-2.5z" />
-      <path d="M12 12c-1 1.2-3.8-3.8-5.5-2.5 1.3 1.7 4.3 1.5 5.5 2.5z" />
-      <path d="M12 12c-1-1.2-3.8-3.8-5.5-2.5 1.3 1.7 4.3 1.5 5.5 2.5z" />
+      {/* Pétalos Diagonales (X) - 4 pétalos más para sumar 8 */}
+      <path d="M12 12c1.2-1 3.8-3.8 2.5-5.5-1.7 1.3-1.5 4.3-2.5 5.5z" />
+      <path d="M12 12c1.2 1 3.8 3.8 5.5 2.5-1.3-1.7-1.5-4.3-5.5-2.5z" />
+      <path d="M12 12c-1.2 1-3.8 3.8-2.5 5.5 1.7-1.3 1.5-4.3 2.5-5.5z" />
+      <path d="M12 12c-1.2-1-3.8-3.8-5.5-2.5 1.3 1.7 1.5 4.3 5.5 2.5z" />
       <circle cx="12" cy="12" r="1.2" className="fill-white opacity-60" />
     </svg>
   );
