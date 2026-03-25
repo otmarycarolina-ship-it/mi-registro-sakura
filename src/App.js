@@ -153,7 +153,27 @@ const App = () => {
           <p className="text-pink-300 font-bold uppercase tracking-[0.4em] text-[10px] mt-2">Organización Personal</p>
         </header>
 
-        {/* Cronómetro Flotante / Destacado */}
+        {/* --- CAMBIO 1: MESES ARRIBA DEL CRONÓMETRO --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="lg:col-span-2 bg-white/70 backdrop-blur-xl p-6 rounded-[3rem] shadow-sm border border-pink-50 flex items-center justify-between">
+            <button onClick={() => setMesIndice((mesIndice - 1 + 12) % 12)} className="p-3 text-pink-300"><ChevronLeft size={32} /></button>
+            <div className="text-center">
+              <h2 className="text-3xl font-serif font-bold text-pink-500">{mesActualKey}</h2>
+              <p className="text-[10px] font-black text-pink-200 tracking-widest uppercase">Mes de Servicio</p>
+            </div>
+            <button onClick={() => setMesIndice((mesIndice + 1) % 12)} className="p-3 text-pink-300"><ChevronRight size={32} /></button>
+          </div>
+
+          <div className="bg-gradient-to-br from-pink-400 to-pink-500 p-6 rounded-[3rem] shadow-lg text-white flex flex-col justify-center">
+            <div className="flex justify-between items-center mb-2"><Target size={20} className="opacity-80" /><span className="text-[10px] font-black uppercase tracking-widest">Meta Mensual</span></div>
+            <div className="flex items-center gap-3">
+              <input type="number" value={currentData.meta} onChange={(e) => updateCurrentMonth({ meta: Number(e.target.value) })} className="bg-white/20 w-20 text-3xl font-black rounded-2xl text-center focus:outline-none"/>
+              <span className="text-xl font-serif italic">horas</span>
+            </div>
+          </div>
+        </div>
+
+        {/* --- CAMBIO 2: CRONÓMETRO DEBAJO DE LOS MESES --- */}
         <section className="mb-8 bg-white/40 backdrop-blur-md border border-pink-100 p-6 rounded-[3rem] flex flex-wrap items-center justify-around gap-4 shadow-sm">
           <div className="flex items-center gap-4">
             <div className={`p-4 rounded-full ${isTimerRunning ? 'bg-pink-500 animate-pulse' : 'bg-pink-200'} text-white`}>
@@ -174,25 +194,6 @@ const App = () => {
             <button onClick={guardarTiempoCronometro} className="px-6 py-4 bg-pink-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-pink-700 transition-all">Guardar Tiempo</button>
           </div>
         </section>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="lg:col-span-2 bg-white/70 backdrop-blur-xl p-6 rounded-[3rem] shadow-sm border border-pink-50 flex items-center justify-between">
-            <button onClick={() => setMesIndice((mesIndice - 1 + 12) % 12)} className="p-3 text-pink-300"><ChevronLeft size={32} /></button>
-            <div className="text-center">
-              <h2 className="text-3xl font-serif font-bold text-pink-500">{mesActualKey}</h2>
-              <p className="text-[10px] font-black text-pink-200 tracking-widest uppercase">Mes de Servicio</p>
-            </div>
-            <button onClick={() => setMesIndice((mesIndice + 1) % 12)} className="p-3 text-pink-300"><ChevronRight size={32} /></button>
-          </div>
-
-          <div className="bg-gradient-to-br from-pink-400 to-pink-500 p-6 rounded-[3rem] shadow-lg text-white flex flex-col justify-center">
-            <div className="flex justify-between items-center mb-2"><Target size={20} className="opacity-80" /><span className="text-[10px] font-black uppercase tracking-widest">Meta Mensual</span></div>
-            <div className="flex items-center gap-3">
-              <input type="number" value={currentData.meta} onChange={(e) => updateCurrentMonth({ meta: Number(e.target.value) })} className="bg-white/20 w-20 text-3xl font-black rounded-2xl text-center focus:outline-none"/>
-              <span className="text-xl font-serif italic">horas</span>
-            </div>
-          </div>
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-4 space-y-8">
@@ -234,7 +235,10 @@ const App = () => {
                 <div className="p-4 bg-pink-600 rounded-[2rem] text-white"><p className="text-[10px] font-black opacity-70 uppercase mb-1 font-bold">Porcentaje</p><p className="text-2xl font-black">{porcentaje.toFixed(0)}%</p></div>
                 <button onClick={() => {if(window.confirm("¿Borrar informe completo del mes?")) updateCurrentMonth({historial:{}, estudiantes:[]})}} className="p-4 bg-pink-50 text-pink-200 rounded-[2rem] flex items-center justify-center hover:text-pink-400 transition-colors"><Trash2 size={24} /></button>
               </div>
-              <button onClick={enviarWhatsApp} className="w-full bg-[#25D366] text-white py-6 rounded-[2.5rem] font-black uppercase tracking-widest text-sm shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-4"><Send size={24} /> ENVIAR INFORME POR WHATSAPP</button>
+              {/* --- CAMBIO 3: ICONO DE WHATSAPP AJUSTADO --- */}
+              <button onClick={enviarWhatsApp} className="w-full bg-[#25D366] text-white py-6 rounded-[2.5rem] font-black uppercase tracking-widest text-sm shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-4">
+                <Send size={24} className="rotate-[0deg] relative top-[-1px]" /> ENVIAR INFORME POR WHATSAPP
+              </button>
             </section>
 
             <section className="bg-white p-8 rounded-[4rem] shadow-sm border border-pink-50">
@@ -271,7 +275,12 @@ const App = () => {
               <input type="text" placeholder="Nombre Estudiante" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.nombre} onChange={e => setFormEstudiante({...formEstudiante, nombre: e.target.value})}/>
               <div className="grid grid-cols-2 gap-2">
                 <input type="text" placeholder="Fecha (Ej: 24/03)" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.fecha} onChange={e => setFormEstudiante({...formEstudiante, fecha: e.target.value})}/>
-                <input type="time" placeholder="Hora de Clase" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.horaClase} onChange={e => setFormEstudiante({...formEstudiante, horaClase: e.target.value})}/>
+                
+                {/* --- CAMBIO 4: CASILLA DE HORA CON ICONO DE RELOJ --- */}
+                <div className="relative flex items-center">
+                   <Clock className="absolute left-4 text-pink-300 pointer-events-none" size={16} />
+                   <input type="time" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 pl-11 text-sm focus:outline-none" value={formEstudiante.horaClase} onChange={e => setFormEstudiante({...formEstudiante, horaClase: e.target.value})}/>
+                </div>
               </div>
               <input type="text" placeholder="Folleto / Cap" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.leccion} onChange={e => setFormEstudiante({...formEstudiante, leccion: e.target.value})}/>
               <textarea placeholder="Notas del estudiante..." rows="3" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none resize-none" value={formEstudiante.notas} onChange={e => setFormEstudiante({...formEstudiante, notas: e.target.value})}/>
