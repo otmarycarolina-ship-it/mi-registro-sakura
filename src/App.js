@@ -107,7 +107,6 @@ const App = () => {
     updateCurrentMonth({ historial: nuevoHistorial });
   };
 
-  // Función para formatear la hora de 24h a 12h AM/PM para mostrar en la lista
   const formatTime12h = (time24) => {
     if (!time24) return '';
     const [h, m] = time24.split(':');
@@ -125,12 +124,17 @@ const App = () => {
 
   const porcentaje = Math.min(100, (totalMinutos / (currentData.meta * 60)) * 100);
 
+  // ESTA ES TU FLOR ANTERIOR DETALLADA
   const SakuraIcon = ({ className }) => (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
       <path d="M12 12c.5-1.5 2-5.5 0-9.5-2 4-.5 8 0 9.5z" />
       <path d="M12 12c1.5-.5 5.5-2 9.5 0-4 2-8 .5-9.5 0z" />
       <path d="M12 12c-.5 1.5-2 5.5 0 9.5 2-4 .5-8 0-9.5z" />
       <path d="M12 12c-1.5.5-5.5 2-9.5 0 4-2 8-.5 9.5 0z" />
+      <path d="M12 12c1-1.2 3.8-3.8 5.5-2.5-1.3 1.7-4.3 1.5-5.5 2.5z" />
+      <path d="M12 12c1 1.2 3.8 3.8 5.5 2.5-1.3-1.7-4.3-1.5-5.5-2.5z" />
+      <path d="M12 12c-1 1.2-3.8-3.8-5.5-2.5 1.3 1.7 4.3 1.5 5.5 2.5z" />
+      <path d="M12 12c-1-1.2-3.8-3.8-5.5-2.5 1.3 1.7 4.3 1.5 5.5 2.5z" />
       <circle cx="12" cy="12" r="1.2" className="fill-white opacity-60" />
     </svg>
   );
@@ -227,7 +231,6 @@ const App = () => {
                 <button onClick={() => {if(window.confirm("¿Borrar mes?")) updateCurrentMonth({historial:{}, estudiantes:[]})}} className="p-4 bg-pink-50 text-pink-200 rounded-[2rem] flex items-center justify-center hover:text-pink-400 transition-colors"><Trash2 size={24} /></button>
               </div>
 
-              {/* BOTÓN WHATSAPP ESTILO IMAGEN */}
               <button 
                 onClick={enviarWhatsApp} 
                 className="w-full bg-[#1ed760] text-white py-5 px-8 rounded-full font-bold uppercase tracking-widest text-base shadow-lg hover:brightness-105 active:scale-95 transition-all flex items-center justify-center gap-4"
@@ -272,8 +275,6 @@ const App = () => {
               <input type="text" placeholder="Nombre" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.nombre} onChange={e => setFormEstudiante({...formEstudiante, nombre: e.target.value})}/>
               <div className="grid grid-cols-2 gap-2">
                 <input type="text" placeholder="Día (Ej: Lunes)" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.fecha} onChange={e => setFormEstudiante({...formEstudiante, fecha: e.target.value})}/>
-                
-                {/* CAMBIO: INPUT DE HORA AM/PM */}
                 <div className="relative flex items-center">
                    <input 
                     type="time" 
