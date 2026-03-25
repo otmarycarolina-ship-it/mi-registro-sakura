@@ -166,7 +166,6 @@ const App = () => {
           </div>
 
           <div className="bg-gradient-to-br from-pink-400 to-pink-500 p-6 rounded-[3rem] shadow-lg text-white flex flex-col justify-center">
-            {/* CAMBIO: META -> OBJETIVOS */}
             <div className="flex justify-between items-center mb-2"><Target size={20} className="opacity-80" /><span className="text-[10px] font-black uppercase tracking-widest">Objetivos</span></div>
             <div className="flex items-center gap-3">
               <input type="number" value={currentData.meta} onChange={(e) => updateCurrentMonth({ meta: Number(e.target.value) })} className="bg-white/20 w-20 text-3xl font-black rounded-2xl text-center focus:outline-none"/>
@@ -198,7 +197,8 @@ const App = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-4 space-y-8">
             <section className="bg-white p-8 rounded-[3rem] shadow-sm border border-pink-50">
-              <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest mb-6 flex items-center gap-2"><Timer size={16} /> Manual</h3>
+              {/* CAMBIO SOLICITADO: MANUAL -> REGISTRO DE HOY */}
+              <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest mb-6 flex items-center gap-2"><Timer size={16} /> Registro de hoy</h3>
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <input type="number" placeholder="Hrs" className="w-full bg-pink-50/30 border-b-2 border-pink-100 p-4 text-2xl font-black text-pink-600 focus:outline-none" value={nuevaHora} onChange={e => setNuevaHora(e.target.value)}/>
                 <input type="number" placeholder="Min" className="w-full bg-pink-50/30 border-b-2 border-pink-100 p-4 text-2xl font-black text-pink-600 focus:outline-none" value={nuevoMinuto} onChange={e => setNuevoMinuto(e.target.value)}/>
@@ -207,7 +207,6 @@ const App = () => {
             </section>
 
             <section className="bg-white p-8 rounded-[3rem] shadow-sm border border-pink-50">
-              {/* CAMBIO: ACTIVIDAD -> ACTIVIDAD DIARIA */}
               <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest mb-6 flex items-center gap-2"><CalendarIcon size={16} /> Actividad Diaria</h3>
               <div className="grid grid-cols-7 gap-2">
                 {[...Array(totalDiasMes)].map((_, i) => {
@@ -232,7 +231,6 @@ const App = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10 text-center">
                 <div className="p-4 bg-pink-50/50 rounded-[2rem]"><p className="text-[10px] font-black text-pink-300 uppercase mb-1">Horas</p><p className="text-2xl font-black text-pink-600">{horas}h {minutos}m</p></div>
                 <div className="p-4 bg-pink-50/50 rounded-[2rem]"><p className="text-[10px] font-black text-pink-300 uppercase mb-1">Cursos</p><p className="text-2xl font-black text-pink-600">{currentData.estudiantes.length}</p></div>
-                {/* CAMBIO: META -> PROGRESO */}
                 <div className="p-4 bg-pink-600 rounded-[2rem] text-white"><p className="text-[10px] font-black opacity-70 uppercase mb-1">Progreso</p><p className="text-2xl font-black">{porcentaje.toFixed(0)}%</p></div>
                 <button onClick={() => {if(window.confirm("¿Borrar mes?")) updateCurrentMonth({historial:{}, estudiantes:[]})}} className="p-4 bg-pink-50 text-pink-200 rounded-[2rem] flex items-center justify-center hover:text-pink-400 transition-colors"><Trash2 size={24} /></button>
               </div>
