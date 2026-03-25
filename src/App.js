@@ -139,7 +139,6 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-[#fffafa] p-4 md:p-10 font-sans text-slate-700 relative overflow-x-hidden">
-      {/* Elementos Decorativos */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden opacity-10">
         <SakuraIcon className="absolute top-10 left-10 w-32 h-32 text-pink-200 rotate-12" />
         <SakuraIcon className="absolute bottom-20 right-10 w-48 h-48 text-pink-100 -rotate-12" />
@@ -152,7 +151,6 @@ const App = () => {
           <p className="text-pink-300 font-bold uppercase tracking-[0.4em] text-[10px] mt-2">Servicio y Organización</p>
         </header>
 
-        {/* Sección de Meta y Mes */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <div className="lg:col-span-2 bg-white/70 backdrop-blur-xl p-6 rounded-[3rem] shadow-sm border border-pink-50 flex items-center justify-between">
             <button onClick={() => setMesIndice((mesIndice - 1 + 12) % 12)} className="p-3 text-pink-300"><ChevronLeft size={32} /></button>
@@ -172,7 +170,7 @@ const App = () => {
           </div>
         </div>
 
-        {/* --- WIDGET CRONÓMETRO --- */}
+        {/* CRONÓMETRO */}
         <section className="mb-8 bg-white/80 backdrop-blur-md p-6 rounded-[3rem] shadow-xl border-2 border-pink-100 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className={`p-4 rounded-full ${cronometroActivo ? 'bg-pink-500 animate-pulse' : 'bg-pink-100'} text-white transition-all`}>
@@ -198,7 +196,6 @@ const App = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-4 space-y-8">
-            {/* Registro Manual */}
             <section className="bg-white p-8 rounded-[3rem] shadow-sm border border-pink-50">
               <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest mb-6 flex items-center gap-2"><Clock size={16} /> Registro Manual</h3>
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -208,7 +205,6 @@ const App = () => {
               <button onClick={() => registrarActividadManual()} className="w-full bg-pink-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-pink-100 active:scale-95 transition-all">Añadir al Informe</button>
             </section>
 
-            {/* Calendario */}
             <section className="bg-white p-8 rounded-[3rem] shadow-sm border border-pink-50">
               <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest mb-6 flex items-center gap-2"><CalendarIcon size={16} /> Actividad en {mesActualKey}</h3>
               <div className="grid grid-cols-7 gap-2">
@@ -228,7 +224,6 @@ const App = () => {
           </div>
 
           <div className="lg:col-span-8 space-y-8">
-            {/* Totales */}
             <section className="bg-white/80 backdrop-blur-md p-10 rounded-[4rem] shadow-xl border border-pink-50 text-center">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10 text-center">
                 <div className="p-4 bg-pink-50/50 rounded-[2rem]"><p className="text-[10px] font-black text-pink-300 uppercase mb-1">Horas</p><p className="text-2xl font-black text-pink-600">{horasTotales}h {minutosTotales}m</p></div>
@@ -239,7 +234,6 @@ const App = () => {
               <button onClick={enviarWhatsApp} className="w-full bg-[#25D366] text-white py-6 rounded-[2.5rem] font-black uppercase tracking-widest text-sm shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-4"><Send size={24} /> ENVIAR INFORME POR WHATSAPP</button>
             </section>
 
-            {/* Estudiantes */}
             <section className="bg-white p-8 rounded-[4rem] shadow-sm border border-pink-50">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest flex items-center gap-2"><BookOpen size={16} /> Cursos Bíblicos</h3>
@@ -247,11 +241,11 @@ const App = () => {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {currentData.estudiantes.map(est => (
-                  <div key={est.id} onClick={() => {setFormEstudiante(est); setShowEditModal(est.id)}} className="p-5 bg-pink-50/30 rounded-3xl border border-transparent flex justify-between items-center cursor-pointer hover:border-pink-200 transition-all relative">
+                  <div key={est.id} onClick={() => {setFormEstudiante(est); setShowEditModal(est.id)}} className="p-5 bg-pink-50/30 rounded-3xl border border-transparent flex justify-between items-center cursor-pointer hover:border-pink-200 transition-all">
                     <div>
                       <p className="font-bold text-pink-700 text-sm">{est.nombre}</p>
                       <p className="text-[10px] font-bold text-pink-400 uppercase tracking-widest flex items-center gap-1">
-                        {est.fecha} • {est.leccion} {est.horaVisita && <span className="bg-pink-200 text-pink-600 px-2 py-0.5 rounded-full ml-2 flex items-center gap-1"><Bell size={10} /> {est.horaVisita}</span>}
+                        {est.fecha} • {est.leccion} {est.horaVisita && <span className="bg-pink-200 text-pink-600 px-2 py-0.5 rounded-full ml-2 flex items-center gap-1"><Clock size={10} /> {est.horaVisita}</span>}
                       </p>
                     </div>
                     <button onClick={(e) => {e.stopPropagation(); updateCurrentMonth({ estudiantes: currentData.estudiantes.filter(i => i.id !== est.id) })}} className="text-pink-200 hover:text-red-400"><Trash2 size={16} /></button>
@@ -278,9 +272,8 @@ const App = () => {
                 <input type="text" placeholder="Folleto / Cap" className="w-full bg-pink-50 border border-pink-100 rounded-2xl p-4 text-sm focus:outline-none" value={formEstudiante.leccion} onChange={e => setFormEstudiante({...formEstudiante, leccion: e.target.value})}/>
               </div>
               
-              {/* --- NUEVO SELECTOR DE HORA --- */}
               <div className="relative">
-                <p className="text-[10px] font-black text-pink-300 uppercase mb-2 ml-1">Hora de la Visita (Alarma)</p>
+                <p className="text-[10px] font-black text-pink-300 uppercase mb-2 ml-1">Hora de la Visita</p>
                 <div className="flex items-center gap-2 bg-pink-50 border border-pink-100 rounded-2xl p-4">
                   <Clock size={16} className="text-pink-300" />
                   <input type="time" className="bg-transparent w-full text-sm focus:outline-none text-pink-600 font-bold" value={formEstudiante.horaVisita} onChange={e => setFormEstudiante({...formEstudiante, horaVisita: e.target.value})}/>
@@ -292,24 +285,6 @@ const App = () => {
                 if(formEstudiante.nombre) {
                   const nuevos = showEditModal === 'nuevo' ? [...currentData.estudiantes, { ...formEstudiante, id: Date.now() }] : currentData.estudiantes.map(e => e.id === showEditModal ? formEstudiante : e);
                   updateCurrentMonth({ estudiantes: nuevos });
-                  
-                  // Lógica para programar alarma si hay horaVisita
-                  if (formEstudiante.horaVisita) {
-                    const [h, m] = formEstudiante.horaVisita.split(':');
-                    const ahora = new Date();
-                    const fechaAlarma = new Date();
-                    fechaAlarma.setHours(parseInt(h), parseInt(m), 0);
-                    
-                    const tiempoRestante = fechaAlarma.getTime() - ahora.getTime();
-                    if (tiempoRestante > 0) {
-                      setTimeout(() => {
-                        const audio = new Audio('/alarma.mp3'); // El archivo que subiste a GitHub
-                        audio.play().catch(e => console.log("Permiso de audio requerido"));
-                        alert(`🌸 ¡Hora de visitar a ${formEstudiante.nombre}!`);
-                      }, tiempoRestante);
-                    }
-                  }
-                  
                   setShowEditModal(null);
                 }
               }} className="w-full bg-pink-500 text-white py-4 rounded-2xl font-bold uppercase tracking-widest text-xs">Guardar</button>
