@@ -124,15 +124,13 @@ const App = () => {
 
   const porcentaje = Math.min(100, (totalMinutos / (currentData.meta * 60)) * 100);
 
-  // FLOR CORREGIDA CON EXACTAMENTE 8 PÉTALOS
+  // FLOR CON EXACTAMENTE 8 PÉTALOS
   const SakuraIcon = ({ className }) => (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
-      {/* Pétalos Principales (Cruz) */}
       <path d="M12 12c.5-1.5 2-5.5 0-9.5-2 4-.5 8 0 9.5z" />
       <path d="M12 12c1.5-.5 5.5-2 9.5 0-4 2-8 .5-9.5 0z" />
       <path d="M12 12c-.5 1.5-2 5.5 0 9.5 2-4 .5-8 0-9.5z" />
       <path d="M12 12c-1.5.5-5.5 2-9.5 0 4-2 8-.5 9.5 0z" />
-      {/* Pétalos Diagonales (X) - 4 pétalos más para sumar 8 */}
       <path d="M12 12c1.2-1 3.8-3.8 2.5-5.5-1.7 1.3-1.5 4.3-2.5 5.5z" />
       <path d="M12 12c1.2 1 3.8 3.8 5.5 2.5-1.3-1.7-1.5-4.3-5.5-2.5z" />
       <path d="M12 12c-1.2 1-3.8 3.8-2.5 5.5 1.7-1.3 1.5-4.3 2.5-5.5z" />
@@ -143,8 +141,11 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-[#fffafa] p-4 md:p-10 font-sans text-slate-700 relative overflow-x-hidden">
+      {/* DECORACIÓN DE FLORES ALREDEDOR */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden opacity-10">
         <SakuraIcon className="absolute top-10 left-10 w-32 h-32 text-pink-200 rotate-12" />
+        <SakuraIcon className="absolute top-1/4 right-[-20px] w-24 h-24 text-pink-100 rotate-45 opacity-40" />
+        <SakuraIcon className="absolute bottom-1/3 left-[-30px] w-20 h-20 text-pink-100 -rotate-12 opacity-30" />
         <SakuraIcon className="absolute bottom-20 right-10 w-48 h-48 text-pink-100 -rotate-12" />
       </div>
 
@@ -165,7 +166,8 @@ const App = () => {
           </div>
 
           <div className="bg-gradient-to-br from-pink-400 to-pink-500 p-6 rounded-[3rem] shadow-lg text-white flex flex-col justify-center">
-            <div className="flex justify-between items-center mb-2"><Target size={20} className="opacity-80" /><span className="text-[10px] font-black uppercase tracking-widest">Meta</span></div>
+            {/* CAMBIO: META -> OBJETIVOS */}
+            <div className="flex justify-between items-center mb-2"><Target size={20} className="opacity-80" /><span className="text-[10px] font-black uppercase tracking-widest">Objetivos</span></div>
             <div className="flex items-center gap-3">
               <input type="number" value={currentData.meta} onChange={(e) => updateCurrentMonth({ meta: Number(e.target.value) })} className="bg-white/20 w-20 text-3xl font-black rounded-2xl text-center focus:outline-none"/>
               <span className="text-xl font-serif italic">horas</span>
@@ -205,7 +207,8 @@ const App = () => {
             </section>
 
             <section className="bg-white p-8 rounded-[3rem] shadow-sm border border-pink-50">
-              <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest mb-6 flex items-center gap-2"><CalendarIcon size={16} /> Actividad</h3>
+              {/* CAMBIO: ACTIVIDAD -> ACTIVIDAD DIARIA */}
+              <h3 className="text-xs font-black text-pink-300 uppercase tracking-widest mb-6 flex items-center gap-2"><CalendarIcon size={16} /> Actividad Diaria</h3>
               <div className="grid grid-cols-7 gap-2">
                 {[...Array(totalDiasMes)].map((_, i) => {
                   const dia = i + 1;
@@ -229,7 +232,8 @@ const App = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10 text-center">
                 <div className="p-4 bg-pink-50/50 rounded-[2rem]"><p className="text-[10px] font-black text-pink-300 uppercase mb-1">Horas</p><p className="text-2xl font-black text-pink-600">{horas}h {minutos}m</p></div>
                 <div className="p-4 bg-pink-50/50 rounded-[2rem]"><p className="text-[10px] font-black text-pink-300 uppercase mb-1">Cursos</p><p className="text-2xl font-black text-pink-600">{currentData.estudiantes.length}</p></div>
-                <div className="p-4 bg-pink-600 rounded-[2rem] text-white"><p className="text-[10px] font-black opacity-70 uppercase mb-1">Meta</p><p className="text-2xl font-black">{porcentaje.toFixed(0)}%</p></div>
+                {/* CAMBIO: META -> PROGRESO */}
+                <div className="p-4 bg-pink-600 rounded-[2rem] text-white"><p className="text-[10px] font-black opacity-70 uppercase mb-1">Progreso</p><p className="text-2xl font-black">{porcentaje.toFixed(0)}%</p></div>
                 <button onClick={() => {if(window.confirm("¿Borrar mes?")) updateCurrentMonth({historial:{}, estudiantes:[]})}} className="p-4 bg-pink-50 text-pink-200 rounded-[2rem] flex items-center justify-center hover:text-pink-400 transition-colors"><Trash2 size={24} /></button>
               </div>
 
